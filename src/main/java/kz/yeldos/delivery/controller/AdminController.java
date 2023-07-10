@@ -9,6 +9,6 @@ public class AdminController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @GetMapping(value="/admin-panel")
     public String adminPanel(){
-        return "admin";
+        return "admin-panel";
     }
 }

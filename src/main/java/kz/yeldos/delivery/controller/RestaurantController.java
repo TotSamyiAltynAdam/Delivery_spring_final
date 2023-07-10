@@ -9,6 +9,6 @@ public class RestaurantController {
     @PreAuthorize("hasAnyRole('ROLE_RESTAURANT','ROLE_ADMIN')")
     @GetMapping(value="/restaurant-panel")
     public String restaurantPanel(){
-        return "restaurant";
+        return "restaurant-panel";
     }
 }

@@ -91,4 +91,8 @@ public class HomeController {
         userService.updateFullName(userNewFullName);
         return "redirect:/update-fullName-page?success";
     }
+    @GetMapping(value="/show-me-restaurants")
+    public String allRestaurantsPage(){
+        return "restaurants";
+    }
 }
