@@ -6,11 +6,7 @@ import lombok.Data;
 @Entity
 @Table(name="t_conditions")
 @Data
-public class Condition {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id")
-    private Long id;
+public class Condition extends BaseModel{
 
     @Column(name="type")
     private String type;

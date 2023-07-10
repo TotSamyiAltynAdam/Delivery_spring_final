@@ -8,11 +8,7 @@ import java.util.List;
 @Entity
 @Table(name = "t_restaurants")
 @Data
-public class Restaurant {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id")
-    private Long id;
+public class Restaurant extends BaseModel{
 
     @Column(name="name")
     private String name;

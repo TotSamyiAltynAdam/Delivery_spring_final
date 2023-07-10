@@ -11,11 +11,7 @@ import java.util.List;
 @Entity
 @Table(name="t_users")
 @Data
-public class User implements UserDetails {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="t_users")
-    private Long id;
+public class User extends BaseModel implements UserDetails {
 
     @Column(name="full_name")
     private String fullName;

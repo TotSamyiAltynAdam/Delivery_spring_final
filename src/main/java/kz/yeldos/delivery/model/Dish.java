@@ -6,11 +6,7 @@ import lombok.Data;
 @Entity
 @Table(name="t_dishes")
 @Data
-public class Dish {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id")
-    private Long id;
+public class Dish extends BaseModel{
 
     @Column(name="name")
     private String name;

@@ -8,11 +8,7 @@ import java.util.List;
 @Entity
 @Table(name="t_additional_blocks")
 @Data
-public class Additional_block {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id")
-    private Long id;
+public class Additional_block extends BaseModel{
 
     @Column(name="name")
     private String name;
