@@ -4,9 +4,8 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="layout.html">
     <div layout:fragment="content">
-        <h1 class="text-center">Here should be shown all restaurants</h1>
         <input type="hidden" id="restaurantId">
-        <div class="row mb-3" sec:authorize="hasAnyRole('ROLE_RESTAURANT')">
+        <div class="row mb-3" sec:authorize="hasAnyRole('ROLE_ADMIN')">
             <div class="col-6 mx-auto">
                 <div class="row mt-3">
                     <div class="col-12">
@@ -15,62 +14,143 @@
                 </div>
                 <div class="row mt-2">
                     <div class="col-12">
-                        <input type="text" id="restaurantName" class="form-control">
+                        <input type="text" id="restaurantName" class="form-control" required>
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="col-12">
-                       <label for="address">ADDRESS:</label>
+                        <label for="restaurantRatings">RATINGS:</label>
                     </div>
                 </div>
                 <div class="row mt-2">
                     <div class="col-12">
-                        <input type="text" class="form-control" id="address">
+                        <input type="text" class="form-control" id="restaurantRatings" th:value="0" disabled>
                     </div>
                 </div>
-                <div class="form-check form-switch mt-3" id="categoryForCreationOfRestaurant">
-                    <div class="form-check form-switch">
+                <div class="row mt-3">
+                    <div class="col-12">
+                       <label for="restaurantAddress">ADDRESS:</label>
                     </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <input type="text" class="form-control" id="restaurantAddress" required>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <label for="restaurantOwner">OWNER EMAIL:</label>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <input type="text" class="form-control" id="restaurantOwner" required>
+                    </div>
+                </div>
+
+                <div class="form-check form-switch mt-3" id="categoryForCreationOfRestaurant">
                 </div>
                 <script type="text/javascript">
                     loadCategories();
+                    categoryIdStorage = [];
+                    categoryLength = 0;
                     function loadCategories(){
                         const httpRequest = new XMLHttpRequest();
                         httpRequest.open("GET","/category",true);
                         httpRequest.onreadystatechange = function(){
-                            if(httpRequest.readyState==XMLHttpRequest.DONE && httpRequest.status==200){
+                            if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
                                 let categoryList = JSON.parse(httpRequest.responseText);
                                 let categorySelectionContent = "";
-                                categorySelectionContent+="<input className='form-check-input' type='checkbox' role='switch' id='flexSwitchCheckDefault'>";
-                                categorySelectionContent+="<label className='form-check-label' htmlFor='flexSwitchCheckDefault'>Default switch checkbox input</label>";
-                                // for(let i = 0;i<categoryList.length;i++){
-                                //     categorySelectionContent+="<input className='form-check-input' type='checkbox' role='switch' id='category'>";
-                                //     categorySelectionContent+="<label className='form-check-label' htmlFor='category'>"+categoryList[i].name+"</label>";
-                                // }
+                                for(let i = 0;i<categoryList.length;i++){
+                                    categorySelectionContent+="<input class='form-check-input' type='checkbox' role='switch' id=restaurantCategory"+i+">";
+                                    categorySelectionContent+="<label class='form-check-label' for=restaurantCategory"+i+">"+categoryList[i].name+"</label><br>";
+                                    categoryIdStorage[i] = categoryList[i].id;
+                                }
+                                categoryLength = categoryList.length;
                                 document.getElementById("categoryForCreationOfRestaurant").innerHTML = categorySelectionContent;
                             }
-                        }
+                        };
                         httpRequest.send();
                     }
                 </script>
                 <div class="row mt-3">
                     <div class="col-12">
-                       <button class="btn btn-success text-center">ADD RESTAURANT</button>
+                       <button class="btn btn-success text-center" onclick="addRestaurant()">ADD RESTAURANT</button>
                     </div>
+                    <script type="text/javascript">
+                        categoriesContent = "";
+                        function findSelectedCheckboxes(i){
+                            const httpRequest = new XMLHttpRequest();
+                            httpRequest.open("GET","/category/"+categoryIdStorage[i], false);
+                            httpRequest.onreadystatechange = function(){
+                                if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                    let resultName = JSON.parse(httpRequest.responseText);
+                                    categoriesContent+="{";
+                                    categoriesContent+='"id":'+categoryIdStorage[i]+",";
+                                    categoriesContent+='"name":"'+resultName.name+'"';
+                                    categoriesContent+="},";
+                                }
+                            };
+                            httpRequest.send();
+                        }
+
+                        async function addRestaurant(){
+                            for(let i = 0;i<categoryLength;i++){
+                                if(document.getElementById("restaurantCategory"+i).checked) {
+                                    findSelectedCheckboxes(i)
+                                }
+                            }
+                            if(categoriesContent.length>0) categoriesContent = categoriesContent.slice(0,-1);
+
+                            const httpRequest = new XMLHttpRequest();
+                            httpRequest.open("POST", "/restaurant", true);
+                            httpRequest.setRequestHeader("Content-Type","application/json");
+
+                            let restaurantName = document.getElementById("restaurantName");
+                            let restaurantRatings = document.getElementById("restaurantRatings");
+                            let restaurantAddress = document.getElementById("restaurantAddress");
+                            let restaurantOwner = document.getElementById("restaurantOwner");
+
+                            httpRequest.onreadystatechange = function(){
+                                if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                    restaurantName.value="";
+                                    restaurantAddress.value="";
+                                    for(let i = 0;i<categoryLength;i++){
+                                        let currentCheckBox = document.getElementById("restaurantCategory"+i);
+                                        if(currentCheckBox.checked){
+                                            currentCheckBox.checked=false;
+                                        }
+                                    }
+                                    loadRestaurants();
+                                }
+                            };
+                            let body = {
+                                "name": restaurantName.value,
+                                "ratings":restaurantRatings.value,
+                                "address": restaurantAddress.value,
+                                "userEmail": restaurantOwner.value,
+                                "categories": JSON.parse("["+categoriesContent+"]")
+                            };
+                            body = JSON.stringify(body);
+                            httpRequest.send(body);
+                        }
+                    </script>
                 </div>
             </div>
         </div>
+        <h1 class="text-center">Here should be shown all restaurants</h1>
         <div class="row mt-3">
             <div class="col-12">
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                          <th>ID</th>
-                          <th>NAME</th>
-                          <th>RATINGS</th>
-                          <th>Address</th>
-                          <th>CategoryList</th>
-                          <th style="width: 10%">DETAILS</th>
+                            <th>ID</th>
+                            <th>NAME</th>
+                            <th>RATINGS</th>
+                            <th>Address</th>
+                            <th>Owner Email</th>
+                            <th>CategoryList</th>
+                            <th style="width: 10%">DETAILS</th>
                         </tr>
                     </thead>
                     <tbody id="restaurantListBody">
@@ -85,55 +165,30 @@
                 const httpRequest = new XMLHttpRequest();
                 httpRequest.open("GET","/restaurant",true);
                 httpRequest.onreadystatechange = function(){
-                    if(httpRequest.readyState==XMLHttpRequest.DONE && httpRequest.status==200){
+                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
                         let restaurantList = JSON.parse(httpRequest.responseText);
                         let tableContent = "";
                         for(let i = 0;i<restaurantList.length;i++){
                             tableContent+="<tr>";
-                            tableContent+="<td>"+restaurantList[i].id+"</td>";
-                            tableContent+="<td>"+restaurantList[i].name+"</td>";
-                            tableContent+="<td>"+restaurantList[i].ratings+"</td>";
-                            tableContent+="<td>"+restaurantList[i].address+"</td>";
-                            tableContent+="<td>";
-                            let categoriesLength = restaurantList[i].categories.length;
-                            for(let j = 0;j<categoriesLength-1;j++){
-                                tableContent+=restaurantList[i].categories[j].name + ", ";
-                            }
-                            tableContent+=restaurantList[i].categories[categoriesLength-1].name;
-                            tableContent+="<td><button class='btn btn-primary btn-sm'>DETAILS</button></td>";
-                            tableContent+="</td>";
+                                tableContent+="<td>"+restaurantList[i].id+"</td>";
+                                tableContent+="<td>"+restaurantList[i].name+"</td>";
+                                tableContent+="<td>"+restaurantList[i].ratings+"</td>";
+                                tableContent+="<td>"+restaurantList[i].address+"</td>";
+                                tableContent+="<td>"+restaurantList[i].userEmail+"</td>";
+                                tableContent+="<td>";
+                                    let categoriesLength = restaurantList[i].categories.length;
+                                    for(let j = 0;j<categoriesLength-1;j++){
+                                        tableContent+=restaurantList[i].categories[j].name + ", ";
+                                    }
+                                    tableContent+=restaurantList[i].categories[categoriesLength-1].name;
+                                tableContent+="</td>";
+                                tableContent+="<td><button class='btn btn-primary btn-sm'>DETAILS</button></td>";
                             tableContent+="</tr>";
                         }
                         document.getElementById("restaurantListBody").innerHTML = tableContent;
                     }
-                }
+                };
                 httpRequest.send();
-            }
-            function addRestaurant(){
-              const httpRequest = new XMLHttpRequest();
-              httpRequest.open("POST", "/restaurant", true);
-              httpRequest.setRequestHeader("Content-Type","application/json");
-
-              let restaurantName = document.getElementById("restaurantName");
-              let address = document.getElementById("address");
-              let categoryForCreationOfRestaurant = document.getElementById("categoryForCreationOfRestaurant");
-
-              httpRequest.onreadystatechange = function(){
-                if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-                  courseName.value="";
-                  description.value="";
-                  price.value="";
-                  loadCourses();
-                }
-              };
-
-                let body = {
-                "courseName": courseName.value,
-                "description": description.value,
-                "price": price.value
-              };
-              body = JSON.stringify(body);
-              httpRequest.send(body);
             }
       </script>
     </div>

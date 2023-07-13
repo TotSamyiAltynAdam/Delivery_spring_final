@@ -1,6 +1,7 @@
 package kz.yeldos.delivery.dto;
 
 import kz.yeldos.delivery.model.Category;
+import kz.yeldos.delivery.model.User;
 import lombok.Data;
 
 import java.util.List;
@@ -13,5 +14,6 @@ public class RestaurantDTO {
     private String address;
 
     private List<Category> categories;
+    private String userEmail;
 
 }

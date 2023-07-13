@@ -21,4 +21,7 @@ public class Restaurant extends BaseModel{
 
     @ManyToMany
     private List<Category> categoryList;
+
+    @Column(name="user_email")
+    private String userEmail;
 }
