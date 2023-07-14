@@ -1,5 +1,7 @@
 package kz.yeldos.delivery.service;
 
+import kz.yeldos.delivery.dto.UserDTO;
+import kz.yeldos.delivery.mapper.UserMapper;
 import kz.yeldos.delivery.model.User;
 import kz.yeldos.delivery.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,12 +13,17 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
+
 public class UserService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -27,16 +34,29 @@ public class UserService implements UserDetailsService {
             throw new UsernameNotFoundException("User Not Found!");
         }
     }
+    public List<UserDTO> getUsers(){
+        return userMapper.toDtoList(userRepository.findAll());
+    }
+    public UserDTO getUser(Long id){
+        return userMapper.toDto(userRepository.findById(id).orElse(null));
+    }
 
-    public User addUser(User user){
-        User checkUser = userRepository.findByEmail(user.getEmail());
+    public UserDTO addUser(UserDTO userDTO){
+        User checkUser = userRepository.findByEmail(userDTO.getEmail());
         if(checkUser==null){
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setPreOrder(false);
-            return userRepository.save(user);
+            userDTO.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+            userDTO.setPreOrder(false);
+            return userMapper.toDto(userRepository.save(userMapper.toModel(userDTO)));
         }
         return null;
     }
+    public UserDTO updateUser(UserDTO userDTO){
+        return userMapper.toDto(userRepository.save(userMapper.toModel(userDTO)));
+    }
+    public void deleteUser(Long id){
+        userRepository.deleteById(id);
+    }
+
     public User updatePassword(String oldPassword, String newPassword){
         User currentUser = getCurrentSessionUser();
         if(passwordEncoder.matches(oldPassword,currentUser.getPassword())){

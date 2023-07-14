@@ -1,5 +1,6 @@
 package kz.yeldos.delivery.controller;
 
+import kz.yeldos.delivery.dto.UserDTO;
 import kz.yeldos.delivery.model.User;
 import kz.yeldos.delivery.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,11 +49,11 @@ public class HomeController {
                            @RequestParam(name="user_password") String password,
                            @RequestParam(name="user_repeat_password") String rePassword){
         if(password.equals(rePassword)) {
-            User user = new User();
+            UserDTO user = new UserDTO();
             user.setEmail(email);
             user.setFullName(fullName);
             user.setPassword(password);
-            User newUser = userService.addUser(user);
+            UserDTO newUser = userService.addUser(user);
             if(newUser!=null){
                 return "redirect:/sign-up-page?success";
             }else{

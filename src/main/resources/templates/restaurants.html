@@ -94,7 +94,7 @@
                             httpRequest.send();
                         }
 
-                        async function addRestaurant(){
+                        function addRestaurant(){
                             for(let i = 0;i<categoryLength;i++){
                                 if(document.getElementById("restaurantCategory"+i).checked) {
                                     findSelectedCheckboxes(i)
@@ -156,6 +156,73 @@
                     <tbody id="restaurantListBody">
                     </tbody>
                 </table>
+                <div class="modal fade" id="detailsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Restaurant details</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label for="restaurantNameInDetail">NAME:</label>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <input type="text" id="restaurantNameInDetail" class="form-control" readonly>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label for="restaurantRatingsInDetail">RATINGS:</label>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <input type="number" class="form-control" id="restaurantRatingsInDetail" readonly>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label for="restaurantAddressInDetail">ADDRESS:</label>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <input type="text" id="restaurantAddressInDetail" class="form-control" readonly>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label for="restaurantCategoriesInDetail">CATEGORIES:</label>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <textarea name="restaurantCategoriesInDetail" id="restaurantCategoriesInDetail" class="form-control" readonly></textarea>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label for="restaurantUserEmailInDetail">OWNER EMAIL:</label>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <input type="text" id="restaurantUserEmailInDetail" class="form-control" readonly>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">CLOSE</button>
+                                <button type="button" class="btn btn-primary">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <script type="text/javascript">
@@ -180,14 +247,42 @@
                                     for(let j = 0;j<categoriesLength-1;j++){
                                         tableContent+=restaurantList[i].categories[j].name + ", ";
                                     }
-                                    tableContent+=restaurantList[i].categories[categoriesLength-1].name;
+                                    if(categoriesLength!==0) {
+                                        tableContent += restaurantList[i].categories[categoriesLength - 1].name;
+                                    }
                                 tableContent+="</td>";
-                                tableContent+="<td><button class='btn btn-primary btn-sm'>DETAILS</button></td>";
+                                tableContent+="<td><button class='btn btn-primary btn-sm' onclick='openRestaurantDetailsModal("+restaurantList[i].id+")'>DETAILS</button></td>";
                             tableContent+="</tr>";
                         }
                         document.getElementById("restaurantListBody").innerHTML = tableContent;
                     }
                 };
+                httpRequest.send();
+            }
+            function openRestaurantDetailsModal(id){
+                modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET","/restaurant/"+id,true);
+                httpRequest.onreadystatechange = function(){
+                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                        let result = JSON.parse(httpRequest.responseText);
+                        document.getElementById("restaurantNameInDetail").value = result.name;
+                        document.getElementById("restaurantRatingsInDetail").value = result.ratings;
+                        document.getElementById("restaurantAddressInDetail").value = result.address;
+
+                        let categoryContent = "";
+                        let categoriesLength = result.categories.length;
+                        for(let j = 0;j<categoriesLength-1;j++){
+                            categoryContent+=result.categories[j].name + ", ";
+                        }
+                        categoryContent+=result.categories[categoriesLength-1].name;
+
+                        document.getElementById("restaurantCategoriesInDetail").value = categoryContent;
+                        document.getElementById("restaurantUserEmailInDetail").value = result.userEmail;
+                        document.getElementById("restaurantId").value=result.id;
+                        modal.show();
+                    }
+                }
                 httpRequest.send();
             }
       </script>
