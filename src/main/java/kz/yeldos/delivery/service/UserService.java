@@ -45,7 +45,6 @@ public class UserService implements UserDetailsService {
         User checkUser = userRepository.findByEmail(userDTO.getEmail());
         if(checkUser==null){
             userDTO.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-            userDTO.setPreOrder(false);
             return userMapper.toDto(userRepository.save(userMapper.toModel(userDTO)));
         }
         return null;
@@ -67,13 +66,11 @@ public class UserService implements UserDetailsService {
     }
     public User getCurrentSessionUser(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = null;
         if(!(authentication instanceof AnonymousAuthenticationToken)){
-            User user = (User) authentication.getPrincipal();
-            if(user!=null){
-                return user;
-            }
+            user = (User) authentication.getPrincipal();
         }
-        return null;
+        return user;
     }
     public void updateFullName(String newFullName){
         User currentUser = getCurrentSessionUser();

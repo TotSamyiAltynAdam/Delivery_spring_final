@@ -5,6 +5,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="layout.html">
     <div layout:fragment="content">
         <h1 class="text-center">Here should be shown all users</h1>
+        <input type="hidden" id="userId">
         <div class="row mt-3 mb-5">
             <div class="col-6">
                 <table class="table table-striped">
@@ -15,7 +16,7 @@
                         <th>EMAIL</th>
                         <th>PRE ORDER</th>
                         <th>PERMISSIONS</th>
-                        <th style="width: 10%">DETAILS</th>
+                        <th style="width: 10%">Change Permissions</th>
                     </tr>
                     </thead>
                     <tbody id="userListBody">
@@ -25,24 +26,36 @@
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="staticBackdropLabel1">User DETAILS</h1>
+                                <h1 class="modal-title fs-5" id="staticBackdropLabel1">User Permissions</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="row mt-3">
                                     <div class="col-12">
-                                        <label for="userPermissionsInDetail">USER PERMISSIONS:</label>
+                                        <label for="userNameInDetail">USER NAME:</label>
                                     </div>
                                 </div>
                                 <div class="row mt-2">
                                     <div class="col-12">
-                                        <input type="text" id="userPermissionsInDetail" class="form-control">
+                                        <input type="text" id="userNameInDetail" class="form-control">
                                     </div>
                                 </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label for="userEmailInDetail">USER EMAIL:</label>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <input type="text" id="userEmailInDetail" class="form-control">
+                                    </div>
+                                </div>
+
+                                <div class="mt-3" id="userPermissionsInDetail"></div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">CLOSE</button>
-                                <button type="button" class="btn btn-primary">OK</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="deleteUser()">DELETE</button>
+                                <button type="button" class="btn btn-primary" onclick="updateUser()">UPDATE</button>
                             </div>
                         </div>
                     </div>
@@ -134,6 +147,27 @@
                 };
                 httpRequest.send();
             }
+            loadPermissions();
+            permissionStorage = [];
+            totalPermissionLength = 0;
+            function loadPermissions(){
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET","/permission",true);
+                httpRequest.onreadystatechange = function(){
+                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                        let allPermission = JSON.parse(httpRequest.responseText);
+                        let contentForAllPermission = "";
+                        totalPermissionLength = allPermission.length;
+                        for(let i = 0;i<totalPermissionLength;i++){
+                            contentForAllPermission+="<input class='form-check-input' type='checkbox' role='switch' id=permission-"+i+">";
+                            contentForAllPermission+="<label class='form-check-label' for=permission-"+i+">"+allPermission[i].role+"</label><br>";
+                            permissionStorage[i] = allPermission[i].id;
+                        }
+                        document.getElementById("userPermissionsInDetail").innerHTML = contentForAllPermission;
+                    }
+                }
+                httpRequest.send();
+            }
 
             loadUsers();
             function loadUsers(){
@@ -152,11 +186,11 @@
                                     isAdmin=true;
                                     break;
                                 }else{
-                                    userPermissionContent += userList[i].permissions[x].role + ",";
+                                    userPermissionContent += userList[i].permissions[x].role + ", ";
                                 }
                             }
-                            if(userPermissionContent.length>0) userPermissionContent = userPermissionContent.slice(0,-1);
                             if(!isAdmin) {
+                                if(userPermissionContent.length>0) userPermissionContent = userPermissionContent.slice(0,-2);
                                 tableContent += "<tr>";
                                 tableContent += "<td>" + userList[i].id + "</td>";
                                 tableContent += "<td>" + userList[i].fullName + "</td>";
@@ -186,7 +220,7 @@
                     }
                 };
                 let body = {
-                    "name": categoryName.value,
+                    "name": categoryName.value
                 };
                 body = JSON.stringify(body);
                 httpRequest.send(body);
@@ -212,15 +246,19 @@
                 httpRequest.onreadystatechange = function(){
                     if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
                         let result = JSON.parse(httpRequest.responseText);
-                        let contentForUserPermissions = "";
                         let resultPermissionLength = result.permissions.length;
-                        for(let i = 0;i<resultPermissionLength-1;i++){
-                            contentForUserPermissions+=result.permissions[i].role +",";
+                        for(let i = 0;i<totalPermissionLength;i++){
+                            document.getElementById("permission-"+i).checked = false;
+                            for(let j = 0;j<resultPermissionLength;j++){
+                                if(permissionStorage[i]===result.permissions[j].id){
+                                    document.getElementById("permission-"+i).checked = true;
+                                    break;
+                                }
+                            }
                         }
-                        if(resultPermissionLength>0) {
-                            contentForUserPermissions+=result.permissions[resultPermissionLength-1].role;
-                        }
-                        document.getElementById("userPermissionsInDetail").value=contentForUserPermissions;
+                        document.getElementById("userNameInDetail").value = result.fullName;
+                        document.getElementById("userEmailInDetail").value = result.email;
+                        document.getElementById("userId").value=result.id;
                         modalForUser.show();
                     }
                 }
@@ -267,11 +305,90 @@
 
                 let body = {
                     "id": categoryId.value,
-                    "name": categoryName.value,
+                    "name": categoryName.value
                 };
                 body = JSON.stringify(body);
                 httpRequest.send(body);
             }
+            function deleteUser(){
+                let approve = confirm("Are you sure?");
+                if(approve){
+                    let userId = document.getElementById("userId").value;
+                    const httpRequest = new XMLHttpRequest();
+                    httpRequest.open("DELETE", "/user/"+userId, true);
+                    httpRequest.onreadystatechange = function(){
+                        if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                            modalForUser.hide();
+                            loadUsers();
+                        }
+                    };
+                    httpRequest.send();
+                }
+            }
+            var currentUpdatedPermissionContent = "";
+            function findSelectedPermissionForSpecifiedUser(i){
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET","/permission/"+permissionStorage[i], false);
+                httpRequest.onreadystatechange = function(){
+                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                        let result = JSON.parse(httpRequest.responseText);
+                        currentUpdatedPermissionContent+="{";
+                        currentUpdatedPermissionContent+='"id":'+result.id+",";
+                        currentUpdatedPermissionContent+='"role":"'+result.role+'"';
+                        currentUpdatedPermissionContent+="},";
+                    }
+                };
+                httpRequest.send();
+            }
+            function updateUser(){
+                currentUpdatedPermissionContent = "";
+                for(let i = 0;i<totalPermissionLength;i++){
+                    if(document.getElementById("permission-"+i).checked){
+                        findSelectedPermissionForSpecifiedUser(i);
+                    }
+                }
+                if(currentUpdatedPermissionContent.length>0) currentUpdatedPermissionContent = currentUpdatedPermissionContent.slice(0,-1);
+
+                let userId = document.getElementById("userId");
+                let userName = document.getElementById("userNameInDetail");
+                let userEmail = document.getElementById("userEmailInDetail");
+                let userPassword = "";
+                let preOrder = "";
+
+                const httpRequest1 = new XMLHttpRequest();
+                httpRequest1.open("GET","/user/"+userId.value,false);
+                httpRequest1.onreadystatechange = function (){
+                     if(httpRequest1.readyState===XMLHttpRequest.DONE && httpRequest1.status===200){
+                         let result = JSON.parse(httpRequest1.responseText);
+                         userPassword = result.password;
+                         preOrder = result.preOrder;
+                     }
+                }
+                httpRequest1.send();
+
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("PUT", "/user", true);
+                httpRequest.setRequestHeader("Content-Type","application/json");
+
+
+                httpRequest.onreadystatechange = function(){
+                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                        loadUsers();
+                    }
+                };
+
+                let body = {
+                    "id": userId.value,
+                    "fullName": userName.value,
+                    "email": userEmail.value,
+                    "password":userPassword,
+                    "preOrder":preOrder,
+                    "permissions":JSON.parse("["+currentUpdatedPermissionContent+"]")
+                };
+                body = JSON.stringify(body);
+                httpRequest.send(body);
+            }
+
         </script>
     </div>
 </html>
