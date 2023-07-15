@@ -4,7 +4,52 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="layout.html">
     <div layout:fragment="content">
-        <h1 class="text-center">Hello Admin Panel</h1>
+        <h1 class="text-center">Here should be shown all users</h1>
+        <div class="row mt-3 mb-5">
+            <div class="col-6">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>FULL NAME</th>
+                        <th>EMAIL</th>
+                        <th>PRE ORDER</th>
+                        <th>PERMISSIONS</th>
+                        <th style="width: 10%">DETAILS</th>
+                    </tr>
+                    </thead>
+                    <tbody id="userListBody">
+                    </tbody>
+                </table>
+                <div class="modal fade" id="detailsModalForUser" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="staticBackdropLabel1">User DETAILS</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label for="userPermissionsInDetail">USER PERMISSIONS:</label>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <input type="text" id="userPermissionsInDetail" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">CLOSE</button>
+                                <button type="button" class="btn btn-primary">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <h1 class="text-center">Categories block</h1>
         <input type="hidden" id="categoryId">
         <div class="row mb-3">
             <div class="col-6 mx-auto">
@@ -39,7 +84,7 @@
                     <tbody id="categoryListBody">
                     </tbody>
                 </table>
-                <div class="modal fade" id="detailsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal fade" id="detailsModalForCategory" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -89,6 +134,44 @@
                 };
                 httpRequest.send();
             }
+
+            loadUsers();
+            function loadUsers(){
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET","/user",true);
+                httpRequest.onreadystatechange = function(){
+                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                        let userList = JSON.parse(httpRequest.responseText);
+                        let tableContent="";
+                        for(let i = 0;i<userList.length;i++){
+                            let isAdmin = false;
+                            let userCurrentPermissionLength = userList[i].permissions.length;
+                            let userPermissionContent = "";
+                            for(let x = 0; x<userCurrentPermissionLength;x++){
+                                if(userList[i].permissions[x].role==='ROLE_ADMIN'){
+                                    isAdmin=true;
+                                    break;
+                                }else{
+                                    userPermissionContent += userList[i].permissions[x].role + ",";
+                                }
+                            }
+                            if(userPermissionContent.length>0) userPermissionContent = userPermissionContent.slice(0,-1);
+                            if(!isAdmin) {
+                                tableContent += "<tr>";
+                                tableContent += "<td>" + userList[i].id + "</td>";
+                                tableContent += "<td>" + userList[i].fullName + "</td>";
+                                tableContent += "<td>" + userList[i].email + "</td>";
+                                tableContent += "<td>" + userList[i].preOrder + "</td>";
+                                tableContent += "<td>" + userPermissionContent + "</td>";
+                                tableContent += "<td><button class='btn btn-primary btn-sm' onclick='openUserDetailsModal(" + userList[i].id + ")'>DETAILS</button></td>";
+                                tableContent += "</tr>";
+                            }
+                        }
+                        document.getElementById("userListBody").innerHTML = tableContent;
+                    }
+                }
+                httpRequest.send();
+            }
             function addCategory(){
                 const httpRequest = new XMLHttpRequest();
                 httpRequest.open("POST", "/category", true);
@@ -109,7 +192,7 @@
                 httpRequest.send(body);
             }
             function openCategoryDetailsModal(id){
-                modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+                modalForCategory = new bootstrap.Modal(document.getElementById('detailsModalForCategory'));
                 const httpRequest = new XMLHttpRequest();
                 httpRequest.open("GET","/category/"+id,true);
                 httpRequest.onreadystatechange = function(){
@@ -117,7 +200,28 @@
                         let result = JSON.parse(httpRequest.responseText);
                         document.getElementById("categoryNameInDetail").value = result.name;
                         document.getElementById("categoryId").value=result.id;
-                        modal.show();
+                        modalForCategory.show();
+                    }
+                }
+                httpRequest.send();
+            }
+            function openUserDetailsModal(id){
+                modalForUser = new bootstrap.Modal(document.getElementById("detailsModalForUser"));
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET","/user/"+id,true);
+                httpRequest.onreadystatechange = function(){
+                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                        let result = JSON.parse(httpRequest.responseText);
+                        let contentForUserPermissions = "";
+                        let resultPermissionLength = result.permissions.length;
+                        for(let i = 0;i<resultPermissionLength-1;i++){
+                            contentForUserPermissions+=result.permissions[i].role +",";
+                        }
+                        if(resultPermissionLength>0) {
+                            contentForUserPermissions+=result.permissions[resultPermissionLength-1].role;
+                        }
+                        document.getElementById("userPermissionsInDetail").value=contentForUserPermissions;
+                        modalForUser.show();
                     }
                 }
                 httpRequest.send();
@@ -125,17 +229,27 @@
             function deleteCategory(){
                 let approve = confirm("Are you sure?");
                 if(approve){
-                    let categoryId = document.getElementById("categoryId");
+                    let categoryId = document.getElementById("categoryId").value;
                     const httpRequest = new XMLHttpRequest();
-                    httpRequest.open("DELETE", "/category/"+categoryId.value, true);
+                    httpRequest.open("DELETE","/restaurant/category/"+categoryId,true);
                     httpRequest.onreadystatechange = function(){
                         if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-                            modal.hide();
-                            loadCategories();
+                            deleteCategoryFromDatabase(categoryId);
                         }
                     };
                     httpRequest.send();
                 }
+            }
+            function deleteCategoryFromDatabase(categoryId){
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("DELETE", "/category/"+categoryId, true);
+                httpRequest.onreadystatechange = function(){
+                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                        modalForCategory.hide();
+                        loadCategories();
+                    }
+                };
+                httpRequest.send();
             }
             function updateCategory(){
                 const httpRequest = new XMLHttpRequest();

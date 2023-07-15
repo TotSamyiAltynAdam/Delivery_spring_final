@@ -24,7 +24,7 @@
                 </div>
                 <div class="row mt-2">
                     <div class="col-12">
-                        <input type="text" class="form-control" id="restaurantRatings" th:value="0" disabled>
+                        <input type="number" class="form-control" id="restaurantRatings" th:value="0" disabled>
                     </div>
                 </div>
                 <div class="row mt-3">
@@ -39,12 +39,12 @@
                 </div>
                 <div class="row mt-3">
                     <div class="col-12">
-                        <label for="restaurantOwner">OWNER EMAIL:</label>
+                        <label for="restaurantOwner" class="form-label">OWNER EMAIL:</label>
                     </div>
                 </div>
                 <div class="row mt-2">
                     <div class="col-12">
-                        <input type="text" class="form-control" id="restaurantOwner" required>
+                        <input type="email" class="form-control" id="restaurantOwner" required>
                     </div>
                 </div>
 
@@ -211,7 +211,7 @@
                                 </div>
                                 <div class="row mt-2">
                                     <div class="col-12">
-                                        <input type="text" id="restaurantUserEmailInDetail" class="form-control" readonly>
+                                        <input type="email" id="restaurantUserEmailInDetail" class="form-control" readonly>
                                     </div>
                                 </div>
 
