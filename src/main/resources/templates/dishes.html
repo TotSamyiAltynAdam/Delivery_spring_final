@@ -22,7 +22,9 @@
                     if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
                         let result = JSON.parse(httpRequest.responseText);
                         for(let i = 0;i<result.length;i++){
-                            dishTypeIdSet.add(result[i].dishType.id);
+                            if(result[i].dishType!==null) {
+                                dishTypeIdSet.add(result[i].dishType.id);
+                            }
                         }
                     }
                 };
@@ -62,7 +64,7 @@
                    httpRequest.send();
                 });
             }
-            async function showCategoriesOnTheScreen(){
+            async function showDishesOnTheScreen(){
                 try{
                     loadDishTypesRelatedToTheRestaurant();
                     let tableContent = "";
@@ -97,7 +99,7 @@
                 }
             }
 
-            showCategoriesOnTheScreen()
+            showDishesOnTheScreen()
         </script>
     </div>
 </html>

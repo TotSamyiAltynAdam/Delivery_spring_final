@@ -2,6 +2,7 @@ package kz.yeldos.delivery.service;
 
 import kz.yeldos.delivery.dto.DishDTO;
 import kz.yeldos.delivery.mapper.DishMapper;
+import kz.yeldos.delivery.model.Dish;
 import kz.yeldos.delivery.repository.DishRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,13 @@ public class DishService {
     }
     public void deleteDish(Long id){
         dishRepository.deleteById(id);
+    }
+    public void deleteDishTypeFromDishes(Long dishTypeId){
+        List<Dish> dishList = dishRepository.findAllByDishTypeId(dishTypeId);
+        for(Dish dish: dishList){
+            dish.setDishType(null);
+            dishRepository.save(dish);
+        }
     }
     public List<DishDTO> findDishesWhereRestaurant(Long id){
         return dishMapper.toDtoList(dishRepository.findAllByRestaurantId(id));
