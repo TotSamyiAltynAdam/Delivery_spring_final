@@ -37,4 +37,9 @@ public class DishRestController {
     public List<DishDTO> findAllDishesWhereRestaurant(@PathVariable(name="id") Long id){
         return dishService.findDishesWhereRestaurant(id);
     }
+    @GetMapping(value="/restaurant/{restaurantId}/dishType/{dishTypeId}")
+    public List<DishDTO> findAllDishesWhereRestaurantAndDishType(@PathVariable(name="restaurantId") Long restaurantId,
+                                       @PathVariable(name="dishTypeId") Long dishTypeId){
+        return dishService.findDishesWhereRestaurantAndDishType(restaurantId,dishTypeId);
+    }
 }

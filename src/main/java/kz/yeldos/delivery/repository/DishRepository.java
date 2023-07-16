@@ -11,4 +11,5 @@ import java.util.List;
 @Transactional
 public interface DishRepository extends JpaRepository<Dish,Long> {
     List<Dish> findAllByRestaurantId(Long id);
+    List<Dish> findAllByRestaurantIdAndDishType_Id(Long restaurantId,Long dishTypeId);
 }

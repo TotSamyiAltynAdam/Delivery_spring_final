@@ -5,11 +5,14 @@ import kz.yeldos.delivery.mapper.PermissionMapper;
 import kz.yeldos.delivery.model.Permission;
 import kz.yeldos.delivery.model.User;
 import kz.yeldos.delivery.service.PermissionService;
+import kz.yeldos.delivery.service.RestaurantService;
 import kz.yeldos.delivery.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -22,6 +25,8 @@ public class HomeController {
     private UserService userService;
     @Autowired
     private PermissionService permissionService;
+    @Autowired
+    private RestaurantService restaurantService;
     @Autowired
     private PermissionMapper permissionMapper;
 
@@ -115,5 +120,11 @@ public class HomeController {
     @GetMapping(value="/show-me-restaurants")
     public String allRestaurantsPage(){
         return "restaurants";
+    }
+
+    @GetMapping(value="/show-me-dishes-relatedToRestaurant/{id}")
+    public String allDishesRelatedToParticularRestaurant(@PathVariable(name="id") Long id, Model model){
+        model.addAttribute("restaurant",restaurantService.getRestaurant(id));
+        return "dishes";
     }
 }
