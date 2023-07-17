@@ -60,81 +60,63 @@
             </div>
         </div>
         <script type="text/javascript">
-            // async function showDishesOnTheScreen(){
-            //     try{
-            //         loadDishTypesRelatedToTheRestaurant();
-            //         let tableContent = "";
-            //         for(const dishTypeId of dishTypeIdSet){
-            //             const dishTypeResult = await loadDishType(dishTypeId);
-            //             const dishesSeparatedByType = await loadDishesWhereRestaurantAndDishTypeAre(document.getElementById("restaurantId").value,dishTypeResult.id);
-            //             tableContent+="<div class='row mt-3'>";
-            //             tableContent+="<div class='col-12'>";
-            //             tableContent+="<table class='table table-striped'>";
-            //             tableContent+="<thead>";
-            //             tableContent+="<tr>";
-            //             tableContent+="<th>"+dishTypeResult.name+"</th>"
-            //             tableContent+="<th style='width: 10%;'>DETAILS</th>"
-            //             tableContent+="</tr>";
-            //             tableContent+="</thead>";
-            //             tableContent+="<tbody>";
-            //             for(let i = 0;i<dishesSeparatedByType.length;i++) {
-            //                 tableContent += "<tr>";
-            //                 tableContent += "<td>" + dishesSeparatedByType[i].name + "</td>";
-            //                 tableContent += "<td><button class='btn btn-primary btn-sm' onclick='openModalForOrderingDish(" + dishesSeparatedByType[i].id + ")'>DETAILS</button></td>";
-            //                 tableContent += "</tr>";
-            //             }
-            //             tableContent+="</tbody>";
-            //             tableContent+="</table>";
-            //             tableContent+="</div>";
-            //             tableContent+="</div>";
-            //         }
-            //         document.getElementById("allDishesDividedByTypes").innerHTML = tableContent;
-            //     }
-            //     catch (error){
-            //         console.error(error);
-            //     }
-            // }
-            function openModalForOrderingDish(dishId){
-                loadAdditionalBlocksRelatedToTheDish(dishId);
-                modalForDish = new bootstrap.Modal(document.getElementById('modalForOrderingDish'));
-                const httpRequest = new XMLHttpRequest();
-                httpRequest.open("GET","/dish/" + dishId,true);
-                httpRequest.onreadystatechange = function (){
-                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-                        let result = JSON.parse(httpRequest.responseText);
-                        document.getElementById("dishNameInDetail").value=result.name;
-                        document.getElementById("dishDescriptionInDetail").value=result.description;
-                        document.getElementById("dishPriceInDetail").value=result.price;
-                        document.getElementById("dishId").value = result.id;
-                        modalForDish.show();
+            async function openModalForOrderingDish(dishId){
+                try {
+                    let additionalBlocks = await loadAdditionalBlocksRelatedToTheDish(dishId);
+                    let additionalBlockContent = "";
+                    for(let i = 0;i<additionalBlocks.length;i++){
+                        additionalBlockContent+="<div class='mt-3' style='border: 1px solid red'>";
+                        additionalBlockContent+="<h6>"+additionalBlocks[i].id + ", " + additionalBlocks[i].name+", "+additionalBlocks[i].description+"</h6>";
+                        additionalBlockContent+="<h6>"+additionalBlocks[i].conditionType.id+" "+additionalBlocks[i].conditionType.type+"</h6>";
+
+                        const additionalDishes = await loadAdditionalDishesRelatedToTheAdditionalBlock(additionalBlocks[i].id);
+
+                        let additionalDishContent = "";
+                        for(let z = 0;z<additionalDishes.length;z++){
+                            additionalDishContent+="<span>"+additionalDishes[z].name+"</span><br>";
+                        }
+                        additionalBlockContent+=additionalDishContent;
+
+                        additionalBlockContent+="</div>";
                     }
+                    document.getElementById("additionalBlockContent").innerHTML = additionalBlockContent;
+
+                    modalForDish = new bootstrap.Modal(document.getElementById('modalForOrderingDish'));
+                    const httpRequest = new XMLHttpRequest();
+                    httpRequest.open("GET", "/dish/" + dishId, true);
+                    httpRequest.onreadystatechange = function () {
+                        if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+                            let result = JSON.parse(httpRequest.responseText);
+                            document.getElementById("dishNameInDetail").value = result.name;
+                            document.getElementById("dishDescriptionInDetail").value = result.description;
+                            document.getElementById("dishPriceInDetail").value = result.price;
+                            document.getElementById("dishId").value = result.id;
+                            modalForDish.show();
+                        }
+                    }
+                    httpRequest.send();
+                }catch (error){
+                    console.error(error);
                 }
-                httpRequest.send();
             }
             function loadAdditionalBlocksRelatedToTheDish(dishId){
-                const httpRequest = new XMLHttpRequest();
-                httpRequest.open("GET","/additionalBlock/dish/"+dishId,true);
-                httpRequest.onreadystatechange = function(){
-                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-                        let additionalBlocks = JSON.parse(httpRequest.responseText);
-                        let additionalBlockContent = "";
-                        for(let i = 0;i<additionalBlocks.length;i++){
-                            additionalBlockContent+="<div class='mt-3' style='border: 1px solid red'>";
-                                additionalBlockContent+="<h6>"+additionalBlocks[i].id + ", " + additionalBlocks[i].name+", "+additionalBlocks[i].description+"</h6>";
-                                additionalBlockContent+="<h6>"+additionalBlocks[i].conditionType.id+" "+additionalBlocks[i].conditionType.type+"</h6>";
-                                //let additionalDish = "";
-                                // const dishTypeResult = loadAdditionalDishesRelatedToTheAdditionalBlock(additionalBlocks[i].id);
-                                // for(let z = 0;z<dishTypeResult.length;z++){
-                                //     alert(dishTypeResult[z].name);
-                                // }
-//                                additionalBlockContent+=additionalDish;
-                            additionalBlockContent+="</div>";
+                return new Promise((resolve,reject)=>{
+                    const httpRequest = new XMLHttpRequest();
+                    httpRequest.open("GET","/additionalBlock/dish/"+dishId,true);
+                    httpRequest.onreadystatechange = function(){
+                        if(httpRequest.readyState===XMLHttpRequest.DONE) {
+                            if (httpRequest.status === 200) {
+                                const additionalBlocks = JSON.parse(httpRequest.responseText);
+                                resolve(additionalBlocks);
+                            }else{
+                                reject(new Error("Request failed, related to the finding additional block by giving dish id"))
+                            }
                         }
-                        document.getElementById("additionalBlockContent").innerHTML = additionalBlockContent;
-                    }
-                };
-                httpRequest.send();
+                    };
+                    httpRequest.send();
+                });
             }
+
             function loadAdditionalDishesRelatedToTheAdditionalBlock(additionalBlockId) {
                 return new Promise((resolve, reject) => {
                     const httpRequest = new XMLHttpRequest();
@@ -142,8 +124,8 @@
                     httpRequest.onreadystatechange = function () {
                         if (httpRequest.readyState === XMLHttpRequest.DONE) {
                             if (httpRequest.status === 200) {
-                                const result = JSON.parse(httpRequest.responseText);
-                                resolve(result);
+                                const additionalDishes = JSON.parse(httpRequest.responseText);
+                                resolve(additionalDishes);
                             } else {
                                 reject(new Error("Request failed, related to the finding additional dishes related to the additional block"));
                             }
