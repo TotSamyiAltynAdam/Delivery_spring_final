@@ -5,14 +5,154 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="layout.html">
     <div layout:fragment="content">
         <input type="hidden" id="restaurantId" th:value="${restaurant.getId()}">
-<!--        <input type="text" id="restaurantName" th:text="${restaurant.getName()}">-->
-<!--        <input type="text" id="restaurantRatings" th:text="${restaurant.getRatings()}">-->
+        <h3 id="restaurantName" th:text="${restaurant.getName()}"></h3>
+        <h3 id="restaurantRatings" th:text="${restaurant.getRatings()} + '%'"></h3>
 <!--        <input type="text" id="restaurantAddress" th:text="${restaurant.getAddress()}">-->
 <!--        <input type="text" id="restaurantEmail" th:text="${restaurant.getUserEmail()}">-->
         <div id="allDishesDividedByTypes">
-
+        </div>
+        <input type="hidden" id="dishId">
+        <div class="modal fade" id="modalForOrderingDish" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel1">Dish Details</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label for="dishNameInDetail">DISH NAME:</label>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <input type="text" id="dishNameInDetail" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label for="dishDescriptionInDetail">DISH DESCRIPTION:</label>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <input type="text" id="dishDescriptionInDetail" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label for="dishPriceInDetail">DISH PRICE:</label>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <input type="number" id="dishPriceInDetail" class="form-control">
+                            </div>
+                        </div>
+                        <div id="additionalBlockContent"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+                        <button type="button" class="btn btn-primary">CLOSE</button>
+                    </div>
+                </div>
+            </div>
         </div>
         <script type="text/javascript">
+            // async function showDishesOnTheScreen(){
+            //     try{
+            //         loadDishTypesRelatedToTheRestaurant();
+            //         let tableContent = "";
+            //         for(const dishTypeId of dishTypeIdSet){
+            //             const dishTypeResult = await loadDishType(dishTypeId);
+            //             const dishesSeparatedByType = await loadDishesWhereRestaurantAndDishTypeAre(document.getElementById("restaurantId").value,dishTypeResult.id);
+            //             tableContent+="<div class='row mt-3'>";
+            //             tableContent+="<div class='col-12'>";
+            //             tableContent+="<table class='table table-striped'>";
+            //             tableContent+="<thead>";
+            //             tableContent+="<tr>";
+            //             tableContent+="<th>"+dishTypeResult.name+"</th>"
+            //             tableContent+="<th style='width: 10%;'>DETAILS</th>"
+            //             tableContent+="</tr>";
+            //             tableContent+="</thead>";
+            //             tableContent+="<tbody>";
+            //             for(let i = 0;i<dishesSeparatedByType.length;i++) {
+            //                 tableContent += "<tr>";
+            //                 tableContent += "<td>" + dishesSeparatedByType[i].name + "</td>";
+            //                 tableContent += "<td><button class='btn btn-primary btn-sm' onclick='openModalForOrderingDish(" + dishesSeparatedByType[i].id + ")'>DETAILS</button></td>";
+            //                 tableContent += "</tr>";
+            //             }
+            //             tableContent+="</tbody>";
+            //             tableContent+="</table>";
+            //             tableContent+="</div>";
+            //             tableContent+="</div>";
+            //         }
+            //         document.getElementById("allDishesDividedByTypes").innerHTML = tableContent;
+            //     }
+            //     catch (error){
+            //         console.error(error);
+            //     }
+            // }
+            function openModalForOrderingDish(dishId){
+                loadAdditionalBlocksRelatedToTheDish(dishId);
+                modalForDish = new bootstrap.Modal(document.getElementById('modalForOrderingDish'));
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET","/dish/" + dishId,true);
+                httpRequest.onreadystatechange = function (){
+                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                        let result = JSON.parse(httpRequest.responseText);
+                        document.getElementById("dishNameInDetail").value=result.name;
+                        document.getElementById("dishDescriptionInDetail").value=result.description;
+                        document.getElementById("dishPriceInDetail").value=result.price;
+                        document.getElementById("dishId").value = result.id;
+                        modalForDish.show();
+                    }
+                }
+                httpRequest.send();
+            }
+            function loadAdditionalBlocksRelatedToTheDish(dishId){
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET","/additionalBlock/dish/"+dishId,true);
+                httpRequest.onreadystatechange = function(){
+                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                        let additionalBlocks = JSON.parse(httpRequest.responseText);
+                        let additionalBlockContent = "";
+                        for(let i = 0;i<additionalBlocks.length;i++){
+                            additionalBlockContent+="<div class='mt-3' style='border: 1px solid red'>";
+                                additionalBlockContent+="<h6>"+additionalBlocks[i].id + ", " + additionalBlocks[i].name+", "+additionalBlocks[i].description+"</h6>";
+                                additionalBlockContent+="<h6>"+additionalBlocks[i].conditionType.id+" "+additionalBlocks[i].conditionType.type+"</h6>";
+                                //let additionalDish = "";
+                                // const dishTypeResult = loadAdditionalDishesRelatedToTheAdditionalBlock(additionalBlocks[i].id);
+                                // for(let z = 0;z<dishTypeResult.length;z++){
+                                //     alert(dishTypeResult[z].name);
+                                // }
+//                                additionalBlockContent+=additionalDish;
+                            additionalBlockContent+="</div>";
+                        }
+                        document.getElementById("additionalBlockContent").innerHTML = additionalBlockContent;
+                    }
+                };
+                httpRequest.send();
+            }
+            function loadAdditionalDishesRelatedToTheAdditionalBlock(additionalBlockId) {
+                return new Promise((resolve, reject) => {
+                    const httpRequest = new XMLHttpRequest();
+                    httpRequest.open("GET", "/additionalDish/additionalBlock/" + additionalBlockId);
+                    httpRequest.onreadystatechange = function () {
+                        if (httpRequest.readyState === XMLHttpRequest.DONE) {
+                            if (httpRequest.status === 200) {
+                                const result = JSON.parse(httpRequest.responseText);
+                                resolve(result);
+                            } else {
+                                reject(new Error("Request failed, related to the finding additional dishes related to the additional block"));
+                            }
+                        }
+                    };
+                    httpRequest.send();
+                });
+            }
+
             const dishTypeIdSet = new Set();
             function loadDishTypesRelatedToTheRestaurant(){
                 const httpRequest = new XMLHttpRequest();
@@ -83,8 +223,8 @@
                                     tableContent+="<tbody>";
                                     for(let i = 0;i<dishesSeparatedByType.length;i++) {
                                         tableContent += "<tr>";
-                                            tableContent += "<td>" + dishesSeparatedByType[i].name + "</td>"
-                                            tableContent += "<td style='width: 10%;'>DETAILS</td>"
+                                            tableContent += "<td>" + dishesSeparatedByType[i].name + "</td>";
+                                            tableContent += "<td><button class='btn btn-primary btn-sm' onclick='openModalForOrderingDish(" + dishesSeparatedByType[i].id + ")'>DETAILS</button></td>";
                                         tableContent += "</tr>";
                                     }
                                     tableContent+="</tbody>";
@@ -98,106 +238,7 @@
                     console.error(error);
                 }
             }
-
             showDishesOnTheScreen()
         </script>
     </div>
 </html>
-
-<!--    <div class="modal fade" id="detailsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">-->
-<!--      <div class="modal-dialog">-->
-<!--        <div class="modal-content">-->
-<!--          <div class="modal-header">-->
-<!--            <h1 class="modal-title fs-5" id="staticBackdropLabel">Restaurant details</h1>-->
-<!--            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>-->
-<!--          </div>-->
-<!--          <div class="modal-body">-->
-<!--            <div class="row mt-3">-->
-<!--              <div class="col-12">-->
-<!--                <label for="restaurantNameInDetail">NAME:</label>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <div class="row mt-2">-->
-<!--              <div class="col-12">-->
-<!--                <input type="text" id="restaurantNameInDetail" class="form-control" readonly>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <div class="row mt-3">-->
-<!--              <div class="col-12">-->
-<!--                <label for="restaurantRatingsInDetail">RATINGS:</label>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <div class="row mt-2">-->
-<!--              <div class="col-12">-->
-<!--                <input type="number" class="form-control" id="restaurantRatingsInDetail" readonly>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <div class="row mt-3">-->
-<!--              <div class="col-12">-->
-<!--                <label for="restaurantAddressInDetail">ADDRESS:</label>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <div class="row mt-2">-->
-<!--              <div class="col-12">-->
-<!--                <input type="text" id="restaurantAddressInDetail" class="form-control" readonly>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <div class="row mt-3">-->
-<!--              <div class="col-12">-->
-<!--                <label for="restaurantCategoriesInDetail">CATEGORIES:</label>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <div class="row mt-2">-->
-<!--              <div class="col-12">-->
-<!--                <textarea name="restaurantCategoriesInDetail" id="restaurantCategoriesInDetail" class="form-control" readonly></textarea>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <div class="row mt-3">-->
-<!--              <div class="col-12">-->
-<!--                <label for="restaurantUserEmailInDetail">OWNER EMAIL:</label>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <div class="row mt-2">-->
-<!--              <div class="col-12">-->
-<!--                <input type="email" id="restaurantUserEmailInDetail" class="form-control" readonly>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--  -->
-<!--          </div>-->
-<!--          <div class="modal-footer">-->
-<!--            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">CLOSE</button>-->
-<!--            <button type="button" class="btn btn-primary">OK</button>-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </div>-->
-<!--    <script>-->
-<!--      function openRestaurantDetailsModal(id){-->
-<!--        modal = new bootstrap.Modal(document.getElementById('detailsModal'));-->
-<!--        const httpRequest = new XMLHttpRequest();-->
-<!--        httpRequest.open("GET","/restaurant/"+id,true);-->
-<!--        httpRequest.onreadystatechange = function(){-->
-<!--          if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){-->
-<!--            let result = JSON.parse(httpRequest.responseText);-->
-<!--            document.getElementById("restaurantNameInDetail").value = result.name;-->
-<!--            document.getElementById("restaurantRatingsInDetail").value = result.ratings;-->
-<!--            document.getElementById("restaurantAddressInDetail").value = result.address;-->
-
-<!--            let categoryContent = "";-->
-<!--            let categoriesLength = result.categories.length;-->
-<!--            for(let j = 0;j<categoriesLength-1;j++){-->
-<!--              categoryContent+=result.categories[j].name + ", ";-->
-<!--            }-->
-<!--            if(categoriesLength>0) {-->
-<!--              categoryContent+=result.categories[categoriesLength-1].name;-->
-<!--            }-->
-
-<!--            document.getElementById("restaurantCategoriesInDetail").value = categoryContent;-->
-<!--            document.getElementById("restaurantUserEmailInDetail").value = result.userEmail;-->
-<!--            document.getElementById("restaurantId").value=result.id;-->
-<!--            modal.show();-->
-<!--          }-->
-<!--        }-->
-<!--        httpRequest.send();-->
-<!--      }-->
-<!--    </script>-->

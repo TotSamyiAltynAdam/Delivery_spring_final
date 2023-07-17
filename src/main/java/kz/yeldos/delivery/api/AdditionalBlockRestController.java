@@ -16,6 +16,11 @@ public class AdditionalBlockRestController {
     public List<Additional_blockDTO> getAdditionalBlockList(){
         return additionalBlockService.getAdditionalBlocks();
     }
+    @GetMapping(value="/dish/{id}")
+    public List<Additional_blockDTO> getAdditionalBlockListRelatedToTheDish(@PathVariable(name="id") Long dishId){
+        return additionalBlockService.getAdditionalBlocksRelatedToTheParticularDish(dishId);
+    }
+
     @GetMapping(value = "{id}")
     public Additional_blockDTO getAdditionalBlock(@PathVariable(name="id") Long id){
         return additionalBlockService.getAdditionalBlock(id);

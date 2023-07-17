@@ -16,6 +16,11 @@ public class AdditionalDishRestController {
     public List<Additional_dishDTO> additionalDishList(){
         return additionalDishService.getAdditionalDishes();
     }
+    @GetMapping(value="/additionalBlock/{id}")
+    public List<Additional_dishDTO> getAdditionalDishesRelatedToTheAdditionalBlockId(@PathVariable(name="id")Long id){
+        return additionalDishService.getAdditionalDishesRelatedToTheAdditionalBlockId(id);
+    }
+
     @GetMapping(value="{id}")
     public Additional_dishDTO getAdditionalDish(@PathVariable(name="id") Long id){
         return additionalDishService.getAdditionalDish(id);

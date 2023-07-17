@@ -17,6 +17,9 @@ public class Additional_dishService {
     public List<Additional_dishDTO> getAdditionalDishes(){
         return additionalDishMapper.toDtoList(additionalDishRepository.findAll());
     }
+    public List<Additional_dishDTO> getAdditionalDishesRelatedToTheAdditionalBlockId(Long id){
+        return additionalDishMapper.toDtoList(additionalDishRepository.findAllByAdditionalBlockId(id));
+    }
     public Additional_dishDTO getAdditionalDish(Long id){
         return additionalDishMapper.toDto(additionalDishRepository.findById(id).orElse(null));
     }

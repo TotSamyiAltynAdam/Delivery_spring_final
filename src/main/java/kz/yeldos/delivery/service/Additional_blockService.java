@@ -19,6 +19,9 @@ public class Additional_blockService {
     public List<Additional_blockDTO> getAdditionalBlocks(){
         return additionalBlockMapper.toDtoList(additionalBlockRepository.findAll());
     }
+    public List<Additional_blockDTO> getAdditionalBlocksRelatedToTheParticularDish(Long dishId){
+        return additionalBlockMapper.toDtoList(additionalBlockRepository.findAllByDishId(dishId));
+    }
     public Additional_blockDTO addAdditionalBlock(Additional_blockDTO additionalBlockDTO){
         return additionalBlockMapper.toDto(additionalBlockRepository.save(additionalBlockMapper.toModel(additionalBlockDTO)));
     }
