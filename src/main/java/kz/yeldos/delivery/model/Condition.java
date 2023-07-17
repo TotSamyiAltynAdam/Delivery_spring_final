@@ -9,5 +9,5 @@ import lombok.Data;
 public class Condition extends BaseModel{
 
     @Column(name="type")
-    private String type;
+    private String type; //must,add,remove
 }

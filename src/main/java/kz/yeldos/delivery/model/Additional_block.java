@@ -3,8 +3,6 @@ package kz.yeldos.delivery.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.List;
-
 @Entity
 @Table(name="t_additional_blocks")
 @Data
