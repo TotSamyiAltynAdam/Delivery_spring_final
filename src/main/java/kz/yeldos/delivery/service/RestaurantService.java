@@ -23,6 +23,9 @@ public class RestaurantService {
     public RestaurantDTO getRestaurant(Long id){
         return restaurantMapper.toDto(restaurantRepository.findById(id).orElse(null));
     }
+    public RestaurantDTO getRestaurantByEmail(String email){
+        return restaurantMapper.toDto(restaurantRepository.findByUserEmail(email));
+    }
 
     public RestaurantDTO addRestaurant(RestaurantDTO restaurant){
         return restaurantMapper.toDto(restaurantRepository.save(restaurantMapper.toModel(restaurant)));

@@ -22,7 +22,10 @@ public class RestaurantRestController {
     public RestaurantDTO getRestaurant(@PathVariable(name="id") Long id){
         return restaurantService.getRestaurant(id);
     }
-
+    @GetMapping(value="/email/{email}")
+    public RestaurantDTO getRestaurantByEmail(@PathVariable(name="email") String email){
+        return restaurantService.getRestaurantByEmail(email);
+    }
     @PostMapping
     public RestaurantDTO addRestaurant(@RequestBody RestaurantDTO restaurant){
         return restaurantService.addRestaurant(restaurant);

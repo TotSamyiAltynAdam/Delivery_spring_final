@@ -12,4 +12,5 @@ import java.util.List;
 @Transactional
 public interface RestaurantRepository extends JpaRepository<Restaurant,Long> {
     List<Restaurant> findByCategoryListContaining(Category category);
+    Restaurant findByUserEmail(String email);
 }
