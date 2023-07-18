@@ -248,8 +248,8 @@
                                     let categorySelectionContent = "";
                                     updatedCategoryLength = categoryList.length;
                                     for(let i = 0;i<updatedCategoryLength;i++){
-                                        categorySelectionContent+="<input class='form-check-input' type='checkbox' role='switch' id=updatedRestaurantCategory"+i+">";
-                                        categorySelectionContent+="<label class='form-check-label' for=updatedRestaurantCategory"+i+">"+categoryList[i].name+"</label><br>";
+                                        categorySelectionContent+="<input class='form-check-input' type='checkbox' role='switch' id=updatedRestaurantCategory-"+i+">";
+                                        categorySelectionContent+="<label class='form-check-label' for=updatedRestaurantCategory-"+i+">"+categoryList[i].name+"</label><br>";
                                         updatedCategoryIdStorage[i] = categoryList[i].id;
                                     }
                                     document.getElementById("restaurantCategoryInDetail").innerHTML = categorySelectionContent;
@@ -334,12 +334,97 @@
                             document.getElementById("restaurantNameInDetail").value = result.name;
                             document.getElementById("restaurantRatingsInDetail").value = result.ratings;
                             document.getElementById("restaurantAddressInDetail").value = result.address;
-                            alert(result.categories.length);
+                            for(let i = 0;i<updatedCategoryLength;i++) {
+                                document.getElementById("updatedRestaurantCategory-"+i).checked = false;
+                                for (let j = 0; j < result.categories.length; j++) {
+                                    if(updatedCategoryIdStorage[i]===result.categories[j].id){
+                                        document.getElementById("updatedRestaurantCategory-"+i).checked = true;
+                                        break;
+                                    }
+                                }
+                            }
                             document.getElementById("restaurantOwnerEmailInDetail").value = result.userEmail;
                             modalForRestaurant.show();
                         }
                     }
                     httpRequest.send();
+                }
+                var updatedCategoryForCurrentRestaurant = "";
+                function findSelectedUpgradedCategories(i){
+                    const httpRequest = new XMLHttpRequest();
+                    httpRequest.open("GET","/category/"+updatedCategoryIdStorage[i], false);
+                    httpRequest.onreadystatechange = function(){
+                        if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                            let result = JSON.parse(httpRequest.responseText);
+                            updatedCategoryForCurrentRestaurant+="{";
+                            updatedCategoryForCurrentRestaurant+='"id":'+result.id+",";
+                            updatedCategoryForCurrentRestaurant+='"name":"'+result.name+'"';
+                            updatedCategoryForCurrentRestaurant+="},";
+                        }
+                    };
+                    httpRequest.send();
+
+                }
+                function updateRestaurant(){
+                    let restaurantId = document.getElementById("restaurantId");
+                    let restaurantName = document.getElementById("restaurantNameInDetail");
+                    let restaurantRatings = document.getElementById("restaurantRatingsInDetail");
+                    let restaurantAddress = document.getElementById("restaurantAddressInDetail");
+
+                    for(let i = 0;i<updatedCategoryLength;i++){
+                        if(document.getElementById("updatedRestaurantCategory-"+i).checked){
+                            findSelectedUpgradedCategories(i);
+                        }
+                    }
+                    if(updatedCategoryForCurrentRestaurant.length>0) {
+                        updatedCategoryForCurrentRestaurant = updatedCategoryForCurrentRestaurant.slice(0,-1);
+                    }
+                    let restaurantOwnerEmail = document.getElementById("restaurantOwnerEmailInDetail");
+
+                    const httpRequest = new XMLHttpRequest();
+                    httpRequest.open("PUT", "/restaurant", true);
+                    httpRequest.setRequestHeader("Content-Type","application/json");
+                    httpRequest.onreadystatechange = function(){
+                        if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                            loadRestaurants();
+                        }
+                    };
+
+                    let body = {
+                        "id": restaurantId.value,
+                        "name": restaurantName.value,
+                        "ratings":restaurantRatings.value,
+                        "address":restaurantAddress.value,
+                        "categories":JSON.parse("[" +updatedCategoryForCurrentRestaurant+ "]"),
+                        "userEmail":restaurantOwnerEmail.value
+                    };
+                    updatedCategoryForCurrentRestaurant = "";
+                    body = JSON.stringify(body);
+                    httpRequest.send(body);
+                }
+                function deleteRestaurant(){
+                    let approve = confirm("Are you sure?");
+                    if(approve){
+                        let restaurantId = document.getElementById("restaurantId").value;
+                        alert(restaurantId + " you have not finished, yet!");
+                        // const httpRequest1 = new XMLHttpRequest();
+                        // httpRequest1.open("DELETE","/dish/restaurant/"+restaurantId,true);
+                        // httpRequest1.onreadystatechange = function(){
+                        //     if(httpRequest1.readyState===XMLHttpRequest.DONE && httpRequest1.status===200){
+                        //         alert("All dishes successfully deleted from your data base, before deleting chosen restaurant");
+                        //     }
+                        // }
+                        // const httpRequest = new XMLHttpRequest();
+                        // httpRequest.open("DELETE", "/restaurant/"+restaurantId, true);
+                        // httpRequest.onreadystatechange = function(){
+                        //     if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                        //         alert("This restaurant successfully deleted from your data base");
+                        //         modalForRestaurant.hide();
+                        //         loadRestaurants();
+                        //     }
+                        // };
+                        // httpRequest.send();
+                    }
                 }
             </script>
         </div>

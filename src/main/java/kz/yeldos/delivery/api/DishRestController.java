@@ -33,6 +33,10 @@ public class DishRestController {
     public void deleteDish(@PathVariable(name="id") Long id){
         dishService.deleteDish(id);
     }
+    @DeleteMapping(value="/restaurant/{id}")
+    public void deleteDishesLocatedInDeletedRestaurant(@PathVariable(name="id") Long id){
+        dishService.deleteDishesLocatedInDeletedRestaurant(id);
+    }
     @DeleteMapping(value="/dishType/{id}")
     public void deleteDishTypeFromDishes(@PathVariable(name="id") Long dishTypeId){
         dishService.deleteDishTypeFromDishes(dishTypeId);

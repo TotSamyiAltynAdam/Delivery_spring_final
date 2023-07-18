@@ -30,6 +30,9 @@ public class DishService {
     public void deleteDish(Long id){
         dishRepository.deleteById(id);
     }
+    public void deleteDishesLocatedInDeletedRestaurant(Long id){
+        dishRepository.deleteAllByRestaurantId(id);
+    }
     public void deleteDishTypeFromDishes(Long dishTypeId){
         List<Dish> dishList = dishRepository.findAllByDishTypeId(dishTypeId);
         for(Dish dish: dishList){

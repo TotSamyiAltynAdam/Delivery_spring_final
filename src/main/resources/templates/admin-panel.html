@@ -497,7 +497,6 @@
                 httpRequest.send();
             }
             function updateUser(){
-                currentUpdatedPermissionContent = "";
                 for(let i = 0;i<totalPermissionLength;i++){
                     if(document.getElementById("permission-"+i).checked){
                         findSelectedPermissionForSpecifiedUser(i);
@@ -541,6 +540,7 @@
                     "preOrder":preOrder,
                     "permissions":JSON.parse("["+currentUpdatedPermissionContent+"]")
                 };
+                currentUpdatedPermissionContent = "";
                 body = JSON.stringify(body);
                 httpRequest.send(body);
             }
