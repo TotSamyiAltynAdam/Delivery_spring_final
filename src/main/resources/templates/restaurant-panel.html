@@ -4,6 +4,400 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="layout.html">
     <div layout:fragment="content">
-        <h1 class="text-center">Hello Restaurant Panel</h1>
+        <input type="hidden" id="userRestaurantEmail" th:value="${#authentication.principal.email}">
+        <input type="hidden" id="restaurantId">
+        <h3 id="restaurantName" class="text-center"></h3>
+
+        <input type="hidden" id="dishId">
+        <h1 class="text-center mt-5">Dish block</h1>
+        <div class="row mb-3">
+            <div class="col-6 mx-auto">
+                <div class="row mt-3">
+                    <div class="col-12" id="alertForFillingFormForAddingDish">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <label for="dishName">DISH NAME:</label>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <input type="text" id="dishName" class="form-control" required>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <label for="dishDescription">DESCRIPTION:</label>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <input type="text" id="dishDescription" class="form-control" required>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <label for="dishPrice">PRICE:</label>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <input type="number" id="dishPrice" class="form-control" required>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <label for="dishPhoto">PHOTO:</label>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <input type="text" id="dishPhoto" class="form-control" required>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12" id="dishTypeListForAddingANewDish">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button class="btn btn-success text-center" onclick="addDish()">ADD DISH</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-6 mx-auto">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>DISH NAME</th>
+                        <th>DESCRIPTION</th>
+                        <th>PRICE</th>
+                        <th>PHOTO</th>
+                        <th>DISH TYPE</th>
+                        <th>RESTAURANT NAME</th>
+                        <th>DETAILS</th>
+                    </tr>
+                    </thead>
+                    <tbody id="dishListBody">
+                    </tbody>
+                </table>
+                <div class="modal fade" id="detailsModalForDish" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="staticBackdropLabel1">Dish details</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label for="dishNameInDetail">DISH NAME:</label>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <input type="text" id="dishNameInDetail" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label for="dishDescriptionInDetail">DISH DESCRIPTION:</label>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <input type="text" id="dishDescriptionInDetail" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label for="dishPriceInDetail">DISH PRICE:</label>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <input type="number" id="dishPriceInDetail" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label for="dishPhotoInDetail">DISH PHOTO:</label>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <input type="text" id="dishPhotoInDetail" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12" id="dishTypeListForUpgradingAnOldDish">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="deleteDish()">DELETE</button>
+                                <button type="button" class="btn btn-primary" onclick="updateDish()">UPDATE</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script type="text/javascript">
+                    loadUpdatedDishTypes();
+                    updatedDishTypeIdStorage = [];
+                    var updatedDishTypeLength = 0;
+                    function loadUpdatedDishTypes(){
+                        const httpRequest = new XMLHttpRequest();
+                        httpRequest.open("GET","/dishType",true);
+                        httpRequest.onreadystatechange = function(){
+                            if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                let dishTypeList = JSON.parse(httpRequest.responseText);
+                                let dishTypeSelectionContent = "";
+                                updatedDishTypeLength = dishTypeList.length;
+                                for(let i = 0;i<updatedDishTypeLength;i++){
+                                    dishTypeSelectionContent += "<div class='form-check'>" +
+                                        "<input class='form-check-input' type='radio' name='exampleRadios' id='dishUpdatedType-"+i+"' value='dishType-"+dishTypeList[i].id+"'>" +
+                                        "<label class='form-check-label' for='dishUpdatedType-"+i+"'>" +
+                                        dishTypeList[i].name +
+                                        "</label>" +
+                                        "</div>";
+                                    updatedDishTypeIdStorage[i] = dishTypeList[i].id;
+                                }
+                                document.getElementById("dishTypeListForUpgradingAnOldDish").innerHTML = dishTypeSelectionContent;
+                            }
+                        };
+                        httpRequest.send();
+                    }
+                    function deleteDish(){
+                        let approve = confirm("Are you sure?");
+                        if(approve){
+                            alert("You have not finished yet!");
+                            // let dishId = document.getElementById("dishId").value;
+                            // const httpRequest = new XMLHttpRequest();
+                            // httpRequest.open("DELETE","/dish/"+dishId,true);
+                            // httpRequest.onreadystatechange = function(){
+                            //     if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                            //         loadDishes();
+                            //     }
+                            // };
+                            // httpRequest.send();
+                        }
+                    }
+                    function updateDish(){
+                        const httpRequest = new XMLHttpRequest();
+                        httpRequest.open("PUT", "/dish", true);
+                        httpRequest.setRequestHeader("Content-Type","application/json");
+
+                        let dishId = document.getElementById("dishId");
+                        let dishName = document.getElementById("dishNameInDetail");
+                        let dishDescription = document.getElementById("dishDescriptionInDetail");
+                        let dishPrice = document.getElementById("dishPriceInDetail");
+                        let dishPhoto = document.getElementById("dishPhotoInDetail");
+                        let selectedUpgradedDishTypeIs = "";
+                        for(let i = 0;i<dishTypeLength;i++){
+                            if(document.getElementById("dishUpdatedType-"+i).checked){
+                                selectedUpgradedDishTypeIs = dishTypeIdStorage[i];
+                                break;
+                            }
+                        }
+
+                        httpRequest.onreadystatechange = function(){
+                            if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                loadDishes();
+                            }
+                        };
+                        let body = {
+                            "id": dishId.value,
+                            "name": dishName.value,
+                            "description":dishDescription.value,
+                            "price":dishPrice.value,
+                            "photo":dishPhoto.value,
+                            "dishType":JSON.parse("{"+'"id":'+ selectedUpgradedDishTypeIs+"}"),
+                            "restaurant":JSON.parse("{"+'"id":'+ document.getElementById("restaurantId").value+"}")
+                        };
+                        body = JSON.stringify(body);
+                        httpRequest.send(body);
+                    }
+                    function openDishDetailsModal(id){
+                        modalForDish = new bootstrap.Modal(document.getElementById('detailsModalForDish'));
+                        const httpRequest = new XMLHttpRequest();
+                        httpRequest.open("GET","/dish/"+id,true);
+                        httpRequest.onreadystatechange = function(){
+                            if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                let result = JSON.parse(httpRequest.responseText);
+                                document.getElementById("dishNameInDetail").value = result.name;
+                                document.getElementById("dishDescriptionInDetail").value = result.description;
+                                document.getElementById("dishPriceInDetail").value = result.price;
+                                document.getElementById("dishPhotoInDetail").value = result.photo;
+                                document.getElementById("dishId").value=result.id;
+                                for(let i = 0;i<updatedDishTypeLength;i++){
+                                    if(updatedDishTypeIdStorage[i]===result.dishType.id){
+                                        document.getElementById("dishUpdatedType-"+i).checked = true;
+                                        break;
+                                    }
+                                }
+                                modalForDish.show();
+                            }
+                        }
+                        httpRequest.send();
+                    }
+                </script>
+            </div>
+        </div>
+        <script type="text/javascript">
+            findOwnRestaurant();
+            function findOwnRestaurant(){
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET","/restaurant/email/"+document.getElementById("userRestaurantEmail").value,false);
+                httpRequest.onreadystatechange = function(){
+                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                        if(httpRequest.responseText.length!==0) {
+                            let restaurant = JSON.parse(httpRequest.responseText);
+                            document.getElementById("restaurantId").value=restaurant.id;
+                            document.getElementById("restaurantName").textContent=restaurant.name;
+                        }else{
+                            alert("Restaurant not found");
+                        }
+                    }
+                };
+                httpRequest.send();
+            }
+            loadDishTypes();
+            dishTypeIdStorage = [];
+            var dishTypeLength = 0;
+            function loadDishTypes() {
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET", "/dishType", true);
+                httpRequest.onreadystatechange = function () {
+                    if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+                        let dishTypeList = JSON.parse(httpRequest.responseText);
+                        let dishTypeSelectionContent = "";
+                        dishTypeLength = dishTypeList.length;
+                        for (let i = 0; i < dishTypeLength; i++) {
+                            dishTypeSelectionContent += "<div class='form-check'>" +
+                                "<input class='form-check-input' type='radio' name='exampleRadios' id='dishType-"+i+"' value='dishType-"+dishTypeList[i].id+"'>" +
+                                "<label class='form-check-label' for='dishType-"+i+"'>" +
+                                dishTypeList[i].name +
+                                "</label>" +
+                                "</div>";
+
+
+                            dishTypeIdStorage[i] = dishTypeList[i].id;
+                        }
+                        document.getElementById("dishTypeListForAddingANewDish").innerHTML = dishTypeSelectionContent;
+                    }
+                };
+                httpRequest.send();
+            }
+
+            loadDishes();
+            function loadDishes(){
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET","/dish/restaurant/"+document.getElementById("restaurantId").value,false);
+                httpRequest.onreadystatechange = function(){
+                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                        let dishList = JSON.parse(httpRequest.responseText);
+                        let tableContent = "";
+                        for(let i = 0;i<dishList.length;i++){
+                            tableContent+="<tr>";
+                            tableContent+="<td>"+dishList[i].id+"</td>";
+                            tableContent+="<td>"+dishList[i].name+"</td>";
+                            tableContent+="<td>"+dishList[i].description+"</td>";
+                            tableContent+="<td>"+dishList[i].price+"</td>";
+                            tableContent+="<td>"+dishList[i].photo+"</td>";
+                            tableContent+="<td>"+dishList[i].dishType.name+"</td>";
+                            tableContent+="<td>"+dishList[i].restaurant.name+"</td>";
+                            tableContent+="<td><button class='btn btn-primary btn-sm' onclick='openDishDetailsModal("+dishList[i].id+")'>DETAILS</button></td>";
+                            tableContent+="</tr>";
+                        }
+                        document.getElementById("dishListBody").innerHTML = tableContent;
+                    }
+                };
+                httpRequest.send();
+            }
+
+            function showAlertForAddingDish(type, message) {
+                document.getElementById("alertForFillingFormForAddingDish").innerHTML = "";
+
+                let alertDiv = document.createElement("div");
+                alertDiv.classList.add("alert", "alert-" + type, "alert-dismissible", "fade", "show");
+                alertDiv.setAttribute("role", "alert");
+
+                let strongTag = document.createElement("strong");
+                strongTag.textContent = message;
+                alertDiv.appendChild(strongTag);
+
+                let closeButton = document.createElement("button");
+                closeButton.setAttribute("type", "button");
+                closeButton.classList.add("btn-close");
+                closeButton.setAttribute("data-bs-dismiss", "alert");
+                closeButton.setAttribute("aria-label", "Close");
+                alertDiv.appendChild(closeButton);
+
+                document.getElementById("alertForFillingFormForAddingDish").appendChild(alertDiv);
+            }
+            function addDish() {
+                let dishName = document.getElementById("dishName");
+                let dishDescription = document.getElementById("dishDescription");
+                let dishPrice = document.getElementById("dishPrice");
+                let dishPhoto = document.getElementById("dishPhoto");
+                let dishTypeContent = "";
+                for(let i = 0;i<dishTypeLength;i++){
+                    if(document.getElementById("dishType-"+i).checked){
+                        dishTypeContent = "{" + '"id":'+ dishTypeIdStorage[i] + "}";
+                        break;
+                    }
+                }
+                let dishType = dishTypeContent;
+                let restaurant = "{" + '"id":'+ document.getElementById("restaurantId").value + "}";
+                if (dishName.value === "") {
+                    showAlertForAddingDish("danger", "Write Dish name!");
+                } else if (dishDescription.value === "") {
+                    showAlertForAddingDish("danger", "Write a Dish description!");
+                } else if (dishPrice.value === "") {
+                    showAlertForAddingDish("danger", "Write Dish price!");
+                }else if(dishPhoto.value===""){
+                    showAlertForAddingDish("danger", "Attach dish photo!");
+                }else if(dishType===""){
+                    showAlertForAddingDish("danger", "Choose dish type!");
+                } else{
+                    showAlertForAddingDish("success", "Dish added successfully!");
+
+                    const httpRequest = new XMLHttpRequest();
+                    httpRequest.open("POST", "/dish", true);
+                    httpRequest.setRequestHeader("Content-Type", "application/json");
+
+                    httpRequest.onreadystatechange = function () {
+                        if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+                            dishName.value = "";
+                            dishDescription.value = "";
+                            dishPrice.value = "";
+                            dishPhoto.value = "";
+                            for (let i = 0; i < dishTypeLength; i++) {
+                                let currentRadioButton = document.getElementById("dishType-" + i);
+                                if (currentRadioButton.checked) {
+                                    currentRadioButton.checked = false;
+                                    break;
+                                }
+                            }
+                            loadDishes();
+                        }
+                    };
+                    let body = {
+                        "name": dishName.value,
+                        "description": dishDescription.value,
+                        "price": dishPrice.value,
+                        "photo": dishPhoto.value,
+                        "dishType": JSON.parse(dishType),
+                        "restaurant":JSON.parse(restaurant)
+                    };
+                    body = JSON.stringify(body);
+                    httpRequest.send(body);
+                }
+            }
+        </script>
     </div>
 </html>
