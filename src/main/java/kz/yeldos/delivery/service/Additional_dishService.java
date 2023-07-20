@@ -32,4 +32,7 @@ public class Additional_dishService {
     public void deleteAdditionalDish(Long id){
         additionalDishRepository.deleteById(id);
     }
+    public void deleteAdditionalDishesByAdditionalBlock(Long id){
+        additionalDishRepository.deleteAll(additionalDishRepository.findAllByAdditionalBlockId(id));
+    }
 }

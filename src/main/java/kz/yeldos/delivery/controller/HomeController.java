@@ -4,6 +4,7 @@ import kz.yeldos.delivery.dto.UserDTO;
 import kz.yeldos.delivery.mapper.PermissionMapper;
 import kz.yeldos.delivery.model.Permission;
 import kz.yeldos.delivery.model.User;
+import kz.yeldos.delivery.service.Additional_blockService;
 import kz.yeldos.delivery.service.PermissionService;
 import kz.yeldos.delivery.service.RestaurantService;
 import kz.yeldos.delivery.service.UserService;
@@ -27,6 +28,8 @@ public class HomeController {
     private PermissionService permissionService;
     @Autowired
     private RestaurantService restaurantService;
+    @Autowired
+    private Additional_blockService additionalBlockService;
     @Autowired
     private PermissionMapper permissionMapper;
 
@@ -126,5 +129,10 @@ public class HomeController {
     public String allDishesRelatedToParticularRestaurant(@PathVariable(name="id") Long id, Model model){
         model.addAttribute("restaurant",restaurantService.getRestaurant(id));
         return "dishes";
+    }
+    @GetMapping(value="/show-me-additional-dishes-relatedToAdditionalBlock/{id}")
+    public String allAdditionalDishesRelatedToTheParticularAdditionalBlock(@PathVariable(name="id") Long id, Model model){
+        model.addAttribute("additionalBlock",additionalBlockService.getAdditionalBlock(id));
+        return "additional_dishes";
     }
 }

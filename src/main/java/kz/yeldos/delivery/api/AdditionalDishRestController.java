@@ -37,4 +37,8 @@ public class AdditionalDishRestController {
     public void deleteAdditionalDish(@PathVariable (name="id") Long id){
         additionalDishService.deleteAdditionalDish(id);
     }
+    @DeleteMapping(value="/additionalBlock/{id}")
+    public void deleteAdditionalDishesInAdditionalBlock(@PathVariable(name="id") Long additionalBlockId){
+        additionalDishService.deleteAdditionalDishesByAdditionalBlock(additionalBlockId);
+    }
 }

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en"
+      xlmns:th="http://www.thymeleaf.org" xmlns:xlmns="http://www.w3.org/1999/xhtml"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="layout.html">
+<div layout:fragment="content">
+  <input type="hidden" id="additionalBlockId" th:value="${additionalBlock.getId()}">
+  <input type="hidden" id="additionalBlockDishId" th:value="${additionalBlock.getDish().getId()}">
+  <div class="row mt-3">
+    <div class="col-6 mx-auto">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Additional block name</th>
+            <th>Description</th>
+            <th>Condition</th>
+            <th>Dish name</th>
+            <th>DETAILS</th>
+          </tr>
+        </thead>
+        <tbody id="additionalBlockBody">
+        </tbody>
+      </table>
+      <div class="modal fade" id="detailsModalForAdditionalBlock" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="staticBackdropLabel1">Additional Block details</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row mt-3">
+                <div class="col-12" id="alertForUpdatingFormAdditionalBlock">
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-12">
+                  <label for="additionalBlockName">ADDITIONAL BLOCK NAME:</label>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-12">
+                  <input type="text" id="additionalBlockName" class="form-control">
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-12">
+                  <label for="additionalBlockDescription">ADDITIONAL BLOCK DESCRIPTION:</label>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-12">
+                  <input type="text" id="additionalBlockDescription" class="form-control">
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-12" id="additionalBlockCondition">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="deleteAdditionalBlock()">DELETE</button>
+              <button type="button" class="btn btn-primary" onclick="updateAdditionalBlock()">UPDATE</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    conditionIdStorage = [];
+    var conditionLength = 0;
+    function loadConditions() {
+      const httpRequest = new XMLHttpRequest();
+      httpRequest.open("GET", "/condition", false);
+      httpRequest.onreadystatechange = function () {
+        if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+          let conditionList = JSON.parse(httpRequest.responseText);
+          let conditionSelectionContent = "";
+          conditionLength = conditionList.length;
+          for (let i = 0; i < conditionLength; i++) {
+            conditionSelectionContent += "<div class='form-check'>" +
+                    "<input class='form-check-input' type='radio' name='conditionRadioButtons' id='condition-"+i+"' value='condition-"+conditionList[i].id+"'>" +
+                    "<label class='form-check-label' for='condition-"+i+"'>" +
+                    conditionList[i].type +
+                    "</label>" +
+                    "</div>";
+            conditionIdStorage[i] = conditionList[i].id;
+          }
+          document.getElementById("additionalBlockCondition").innerHTML = conditionSelectionContent;
+        }
+      };
+      httpRequest.send();
+    }
+    function deleteAdditionalBlock() {
+      let approve = confirm("Are you sure?");
+      if (approve) {
+        alert("You have not finished yet!");
+        let additionalBlockId = document.getElementById("additionalBlockId").value;
+
+        const httpRequest1 = new XMLHttpRequest();
+        httpRequest1.open("DELETE", "/additionalDish/additionalBlock/" + additionalBlockId, false);
+        httpRequest1.onreadystatechange = function () {
+          if (httpRequest1.readyState === XMLHttpRequest.DONE && httpRequest1.status === 200) {
+            alert("All additional dishes located in the deleted additional block were deleted");
+          }
+        }
+        httpRequest1.send();
+
+        const httpRequest2 = new XMLHttpRequest();
+        httpRequest2.open("DELETE", "/additionalBlock/" + additionalBlockId, true);
+        httpRequest2.onreadystatechange = function () {
+          if (httpRequest2.readyState === XMLHttpRequest.DONE && httpRequest2.status === 200) {
+            alert("Additional block were deleted");
+          }
+        };
+        httpRequest2.send();
+      }
+    }
+    function updateAdditionalBlock(){
+      const httpRequest = new XMLHttpRequest();
+      httpRequest.open("PUT", "/additionalBlock", true);
+      httpRequest.setRequestHeader("Content-Type","application/json");
+
+      let additionalBlockId = document.getElementById("additionalBlockId").value;
+      let additionalBlockName = document.getElementById("additionalBlockName");
+      let additionalBlockDescription = document.getElementById("additionalBlockDescription");
+      let selectedConditionTypeIs = "";
+      for(let i = 0;i<conditionLength;i++){
+        if(document.getElementById("condition-"+i).checked){
+          selectedConditionTypeIs = conditionIdStorage[i];
+          break;
+        }
+      }
+      httpRequest.onreadystatechange = function(){
+        if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+          loadAdditionalBlock();
+        }
+      };
+      let body = {
+        "id": additionalBlockId,
+        "name": additionalBlockName.value,
+        "description":additionalBlockDescription.value,
+        "conditionType":JSON.parse("{"+'"id":'+ selectedConditionTypeIs+"}"),
+        "dish":JSON.parse("{"+'"id":'+ document.getElementById("additionalBlockDishId").value+"}")
+      };
+      body = JSON.stringify(body);
+      httpRequest.send(body);
+    }
+    function openAdditionalBlockDetailsModal(additionalBlockId){
+      document.getElementById("alertForUpdatingFormAdditionalBlock").innerHTML = "";
+      loadConditions();
+
+      modalForAdditionalBlock = new bootstrap.Modal(document.getElementById('detailsModalForAdditionalBlock'));
+      const httpRequest = new XMLHttpRequest();
+      httpRequest.open("GET","/additionalBlock/"+additionalBlockId,true);
+      httpRequest.onreadystatechange = function() {
+        if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+          let result = JSON.parse(httpRequest.responseText);
+          document.getElementById("additionalBlockName").value = result.name;
+          document.getElementById("additionalBlockDescription").value = result.description;
+          for(let i = 0;i<conditionLength;i++){
+            if(conditionIdStorage[i]===result.conditionType.id){
+              document.getElementById("condition-"+i).checked = true;
+              break;
+            }
+          }
+          modalForAdditionalBlock.show();
+        }
+      };
+      httpRequest.send();
+    }
+
+    loadAdditionalBlock();
+    function loadAdditionalBlock() {
+      const httpRequest = new XMLHttpRequest();
+      httpRequest.open("GET", "/additionalBlock/" + document.getElementById("additionalBlockId").value, true);
+      httpRequest.onreadystatechange = function () {
+        if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+          let additionalBlock = JSON.parse(httpRequest.responseText);
+          let tableContent = "";
+          tableContent += "<tr>";
+          tableContent += "<td>" + additionalBlock.id + "</td>";
+          tableContent += "<td>" + additionalBlock.name + "</td>";
+          tableContent += "<td>" + additionalBlock.description + "</td>";
+          tableContent += "<td>" + additionalBlock.conditionType.type + "</td>";
+          tableContent += "<td>" + additionalBlock.dish.name + "</td>";
+          tableContent += "<td><button class='btn btn-primary btn-sm' onclick='openAdditionalBlockDetailsModal(" + additionalBlock.id + ")'>Edit</button></td>";
+          tableContent += "</tr>";
+          document.getElementById("additionalBlockBody").innerHTML = tableContent;
+        }
+      };
+      httpRequest.send();
+    }
+  </script>
+</div>
+</html>
