@@ -35,6 +35,10 @@ public class AdditionalBlockRestController {
     }
     @DeleteMapping(value = "{id}")
     public void deleteAdditionalBlock(@PathVariable(name="id") Long id){
-        additionalBlockService.deleteAdditionBlock(id);
+        additionalBlockService.deleteAdditionalBlock(id);
+    }
+    @DeleteMapping(value="/dish/{id}")
+    public void deleteAdditionalBlockRelatedToTheDish(@PathVariable(name="id") Long id){
+        additionalBlockService.deleteAdditionalBlockByTakingIntoAccountDish(id);
     }
 }

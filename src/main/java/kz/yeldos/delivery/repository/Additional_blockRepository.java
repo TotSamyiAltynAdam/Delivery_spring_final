@@ -11,4 +11,5 @@ import java.util.List;
 @Transactional
 public interface Additional_blockRepository extends JpaRepository<Additional_block,Long> {
     List<Additional_block> findAllByDishId(Long id);
+    void deleteAllByDishId(Long id);
 }

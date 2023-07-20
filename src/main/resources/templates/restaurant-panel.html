@@ -80,6 +80,7 @@
                         <th>DISH TYPE</th>
                         <th>RESTAURANT NAME</th>
                         <th>DETAILS</th>
+                        <th>ADDITIONAL BLOCK</th>
                     </tr>
                     </thead>
                     <tbody id="dishListBody">
@@ -145,6 +146,66 @@
                         </div>
                     </div>
                 </div>
+                <div class="modal fade" id="detailsModalForAdditionalBlock" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel2" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="staticBackdropLabel2">Additional Block details</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Additional block name</th>
+                                        <th>description</th>
+                                        <th>condition</th>
+                                        <th>dish</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="additionalBlockListBody">
+                                    </tbody>
+                                </table>
+                                <input type="hidden" id="dishIdInAdditionalBlock">
+                                <h4>Add a new additional block for <span id="dishNameInAdditionalBlock"></span></h4>
+                                <div class="row mt-3">
+                                    <div class="col-12" id="alertForFillingFormForAddingAdditionalBlock">
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label for="additionalBlockName">ADDITIONAL BLOCK NAME:</label>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <input type="text" id="additionalBlockName" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label for="additionalBlockDescription">ADDITIONAL BLOCK DESCRIPTION:</label>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <input type="text" id="additionalBlockDescription" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12" id="additionalBlockCondition">
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onclick='addANewOneAdditionalBlock()'>ADD</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <script type="text/javascript">
                     loadUpdatedDishTypes();
                     updatedDishTypeIdStorage = [];
@@ -176,6 +237,14 @@
                         if(approve){
                             alert("You have not finished yet!");
                             // let dishId = document.getElementById("dishId").value;
+                            // const httpRequest1 = new XMLHttpRequest();
+                            // httpRequest1.open("DELETE","/additionalBlock/dish/"+dishId,false);
+                            // httpRequest1.onreadystatechange = function(){
+                            //     if(httpRequest1.readyState===XMLHttpRequest.DONE && httpRequest1.status===200){
+                            //         loadAddtionalBlocks();
+                            //     }
+                            // }
+                            // httpRequest1.send();
                             // const httpRequest = new XMLHttpRequest();
                             // httpRequest.open("DELETE","/dish/"+dishId,true);
                             // httpRequest.onreadystatechange = function(){
@@ -244,6 +313,139 @@
                         }
                         httpRequest.send();
                     }
+                    function loadAdditionalBlocksInSpecifiedDish(dishId){
+                        const httpRequest = new XMLHttpRequest();
+                        httpRequest.open("GET","/additionalBlock/dish/"+dishId,false);
+                        httpRequest.onreadystatechange = function(){
+                            if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                let additionalBlockList = JSON.parse(httpRequest.responseText);
+                                let tableContent = "";
+                                for(let i = 0;i<additionalBlockList.length;i++){
+                                    tableContent+="<tr>";
+                                    tableContent+="<td>"+additionalBlockList[i].id+"</td>";
+                                    tableContent+="<td>"+additionalBlockList[i].name+"</td>";
+                                    tableContent+="<td>"+additionalBlockList[i].description+"</td>";
+                                    tableContent+="<td>"+additionalBlockList[i].conditionType.type+"</td>";
+                                    tableContent+="<td>"+additionalBlockList[i].dish.name+"</td>";
+//                                    tableContent+="<td><button class='btn btn-primary btn-sm' onclick='openAdditionalDishDetailsModal("+dishList[i].id+")'>DETAILS</button></td>";
+                                    tableContent+="</tr>";
+                                }
+                                document.getElementById("additionalBlockListBody").innerHTML = tableContent;
+                            }
+                        };
+                        httpRequest.send();
+                    }
+                    conditionIdStorage = [];
+                    var conditionLength = 0;
+                    function loadConditions() {
+                        const httpRequest = new XMLHttpRequest();
+                        httpRequest.open("GET", "/condition", false);
+                        httpRequest.onreadystatechange = function () {
+                            if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+                                let conditionList = JSON.parse(httpRequest.responseText);
+                                let conditionSelectionContent = "";
+                                conditionLength = conditionList.length;
+                                for (let i = 0; i < conditionLength; i++) {
+                                    conditionSelectionContent += "<div class='form-check'>" +
+                                        "<input class='form-check-input' type='radio' name='conditionRadioButtons' id='condition-"+i+"' value='condition-"+conditionList[i].id+"'>" +
+                                        "<label class='form-check-label' for='condition-"+i+"'>" +
+                                        conditionList[i].type +
+                                        "</label>" +
+                                        "</div>";
+
+                                    conditionIdStorage[i] = conditionList[i].id;
+                                }
+                                document.getElementById("additionalBlockCondition").innerHTML = conditionSelectionContent;
+                            }
+                        };
+                        httpRequest.send();
+                    }
+                    function openAdditionalBlockDetailsModal(dishId){
+                        document.getElementById("alertForFillingFormForAddingAdditionalBlock").innerHTML = "";
+                        loadConditions();
+                        loadAdditionalBlocksInSpecifiedDish(dishId)
+                        modalForAdditionalBlock = new bootstrap.Modal(document.getElementById('detailsModalForAdditionalBlock'));
+                        const httpRequest1 = new XMLHttpRequest();
+                        httpRequest1.open("GET","/dish/"+dishId,false);
+                        httpRequest1.onreadystatechange = function() {
+                            if (httpRequest1.readyState === XMLHttpRequest.DONE && httpRequest1.status === 200) {
+                                let result = JSON.parse(httpRequest1.responseText);
+                                document.getElementById("dishNameInAdditionalBlock").textContent = result.name;
+                                document.getElementById("dishIdInAdditionalBlock").value = result.id;
+                                modalForAdditionalBlock.show();
+
+                            }
+                        };
+                        httpRequest1.send();
+                    }
+                    function showAlertForAddingAdditionalBlock(type, message) {
+                        let alertDiv = document.createElement("div");
+                        alertDiv.classList.add("alert", "alert-" + type, "alert-dismissible", "fade", "show");
+                        alertDiv.setAttribute("role", "alert");
+
+                        let strongTag = document.createElement("strong");
+                        strongTag.textContent = message;
+                        alertDiv.appendChild(strongTag);
+
+                        let closeButton = document.createElement("button");
+                        closeButton.setAttribute("type", "button");
+                        closeButton.classList.add("btn-close");
+                        closeButton.setAttribute("data-bs-dismiss", "alert");
+                        closeButton.setAttribute("aria-label", "Close");
+                        alertDiv.appendChild(closeButton);
+
+                        document.getElementById("alertForFillingFormForAddingAdditionalBlock").appendChild(alertDiv);
+                    }
+                    function addANewOneAdditionalBlock(){
+                        let additionalBlockName = document.getElementById("additionalBlockName");
+                        let additionalBlockDescription = document.getElementById("additionalBlockDescription");
+                        let dishIdInAdditionalBlock = document.getElementById("dishIdInAdditionalBlock");
+                        let conditionTypeContent = "";
+                        for(let i = 0;i<conditionLength;i++){
+                            if(document.getElementById("condition-"+i).checked){
+                                conditionTypeContent = "{" + '"id":'+ conditionIdStorage[i] + "}";
+                                break;
+                            }
+                        }
+                        let conditionType = conditionTypeContent;
+                        let dish = "{" + '"id":'+ dishIdInAdditionalBlock.value + "}";
+                        if (additionalBlockName.value === "") {
+                            showAlertForAddingAdditionalBlock("danger", "Write Additional Block Name!");
+                        } else if (additionalBlockDescription.value === "") {
+                            showAlertForAddingAdditionalBlock("danger", "Write an Additional Block Description!");
+                        }else if(conditionType===""){
+                            showAlertForAddingAdditionalBlock("danger", "Choose condition type!");
+                        } else{
+                            showAlertForAddingAdditionalBlock("success", "Additional Block added successfully!");
+
+                            const httpRequest = new XMLHttpRequest();
+                            httpRequest.open("POST", "/additionalBlock", false);
+                            httpRequest.setRequestHeader("Content-Type", "application/json");
+
+                            httpRequest.onreadystatechange = function () {
+                                if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+                                    additionalBlockName.value = "";
+                                    additionalBlockDescription.value = "";
+                                    for (let i = 0; i < conditionLength; i++) {
+                                        let currentRadioButton = document.getElementById("condition-" + i);
+                                        if (currentRadioButton.checked) {
+                                            currentRadioButton.checked = false;
+                                            break;
+                                        }
+                                    }
+                                    loadAdditionalBlocksInSpecifiedDish(dishIdInAdditionalBlock.value);
+                                }
+                            };
+                            let body = {
+                                "name": additionalBlockName.value,
+                                "description": additionalBlockDescription.value,
+                                "conditionType": JSON.parse(conditionType),
+                                "dish":JSON.parse(dish)
+                            };
+                            body = JSON.stringify(body);
+                            httpRequest.send(body);
+                        }
+                    }
                 </script>
             </div>
         </div>
@@ -278,7 +480,7 @@
                         dishTypeLength = dishTypeList.length;
                         for (let i = 0; i < dishTypeLength; i++) {
                             dishTypeSelectionContent += "<div class='form-check'>" +
-                                "<input class='form-check-input' type='radio' name='exampleRadios' id='dishType-"+i+"' value='dishType-"+dishTypeList[i].id+"'>" +
+                                "<input class='form-check-input' type='radio' name='dishTypeRadioButtons' id='dishType-"+i+"' value='dishType-"+dishTypeList[i].id+"'>" +
                                 "<label class='form-check-label' for='dishType-"+i+"'>" +
                                 dishTypeList[i].name +
                                 "</label>" +
@@ -311,6 +513,7 @@
                             tableContent+="<td>"+dishList[i].dishType.name+"</td>";
                             tableContent+="<td>"+dishList[i].restaurant.name+"</td>";
                             tableContent+="<td><button class='btn btn-primary btn-sm' onclick='openDishDetailsModal("+dishList[i].id+")'>DETAILS</button></td>";
+                            tableContent+="<td><button class='btn btn-primary btn-sm' onclick='openAdditionalBlockDetailsModal("+dishList[i].id+")'>AdditionalBlock</button></td>";
                             tableContent+="</tr>";
                         }
                         document.getElementById("dishListBody").innerHTML = tableContent;

@@ -28,8 +28,10 @@ public class Additional_blockService {
     public Additional_blockDTO updateAdditionalBlock(Additional_blockDTO additionalBlockDTO){
         return additionalBlockMapper.toDto(additionalBlockRepository.save(additionalBlockMapper.toModel(additionalBlockDTO)));
     }
-    public void deleteAdditionBlock(Long id){
+    public void deleteAdditionalBlock(Long id){
         additionalBlockRepository.deleteById(id);
     }
-
+    public void deleteAdditionalBlockByTakingIntoAccountDish(Long id){
+        additionalBlockRepository.deleteAllByDishId(id);
+    }
 }
