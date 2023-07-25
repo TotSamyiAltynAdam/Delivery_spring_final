@@ -60,8 +60,97 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="deleteAdditionalBlock()">DELETE</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
               <button type="button" class="btn btn-primary" onclick="updateAdditionalBlock()">UPDATE</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mt-5">
+    <div class="col-6 mx-auto">
+      <div class="row mt-3">
+        <div class="col-12" id="alertForCreatingNewAdditionalDish">
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-12">
+          <label for="newAdditionalDishName">Additional dish name:</label>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-12">
+          <input type="text" id="newAdditionalDishName" class="form-control" required>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-12">
+          <label for="newAdditionalDishPrice">Price:</label>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-12">
+          <input type="number" id="newAdditionalDishPrice" class="form-control" required>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-12">
+          <button class="btn btn-success text-center" onclick="addNewAdditionalDish()">ADD ADDITIONAL DISH</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <input type="hidden" id="additionalDishId">
+  <div class="row mt-3">
+    <div class="col-6 mx-auto">
+      <table class="table table-striped">
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Additional dish name</th>
+          <th>Price</th>
+        </tr>
+        </thead>
+        <tbody id="additionalDishBody">
+        </tbody>
+      </table>
+      <div class="modal fade" id="detailsModalForAdditionalDish" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel2" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="staticBackdropLabel2">Additional Dish details</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row mt-3">
+                <div class="col-12" id="alertForUpdatingFormAdditionalDish">
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-12">
+                  <label for="additionalDishName">ADDITIONAL DISH NAME:</label>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-12">
+                  <input type="text" id="additionalDishName" class="form-control">
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-12">
+                  <label for="additionalDishPrice">ADDITIONAL DISH PRICE:</label>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-12">
+                  <input type="text" id="additionalDishPrice" class="form-control">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="deleteAdditionalDish()">DELETE</button>
+              <button type="button" class="btn btn-primary" onclick="updateAdditionalDish()">UPDATE</button>
             </div>
           </div>
         </div>
@@ -93,36 +182,42 @@
       };
       httpRequest.send();
     }
-    function deleteAdditionalBlock() {
-      let approve = confirm("Are you sure?");
-      if (approve) {
-        alert("You have not finished yet!");
-        let additionalBlockId = document.getElementById("additionalBlockId").value;
-
-        const httpRequest1 = new XMLHttpRequest();
-        httpRequest1.open("DELETE", "/additionalDish/additionalBlock/" + additionalBlockId, false);
-        httpRequest1.onreadystatechange = function () {
-          if (httpRequest1.readyState === XMLHttpRequest.DONE && httpRequest1.status === 200) {
-            alert("All additional dishes located in the deleted additional block were deleted");
-          }
+    function deleteAdditionalDish(){
+      let additionalDishId = document.getElementById("additionalDishId").value;
+      const httpRequest = new XMLHttpRequest();
+      httpRequest.open("DELETE", "/additionalDish/" + additionalDishId, true);
+      httpRequest.onreadystatechange = function () {
+        if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+          loadAdditionalDishes();
         }
-        httpRequest1.send();
+      };
+      httpRequest.send();
+    }
+    function showAlertForUpdatingAdditionalBlockOrDishOrJustNewDish(type, message, blockOrDish) {
+      let alertDiv = document.createElement("div");
+      alertDiv.classList.add("alert", "alert-" + type, "alert-dismissible", "fade", "show");
+      alertDiv.setAttribute("role", "alert");
 
-        const httpRequest2 = new XMLHttpRequest();
-        httpRequest2.open("DELETE", "/additionalBlock/" + additionalBlockId, true);
-        httpRequest2.onreadystatechange = function () {
-          if (httpRequest2.readyState === XMLHttpRequest.DONE && httpRequest2.status === 200) {
-            alert("Additional block were deleted");
-          }
-        };
-        httpRequest2.send();
+      let strongTag = document.createElement("strong");
+      strongTag.textContent = message;
+      alertDiv.appendChild(strongTag);
+
+      let closeButton = document.createElement("button");
+      closeButton.setAttribute("type", "button");
+      closeButton.classList.add("btn-close");
+      closeButton.setAttribute("data-bs-dismiss", "alert");
+      closeButton.setAttribute("aria-label", "Close");
+      alertDiv.appendChild(closeButton);
+      if(blockOrDish==="block") {
+        document.getElementById("alertForUpdatingFormAdditionalBlock").appendChild(alertDiv);
+      }else if(blockOrDish==="new"){
+        document.getElementById("alertForCreatingNewAdditionalDish").appendChild(alertDiv);
+      } else{
+        document.getElementById("alertForUpdatingFormAdditionalDish").appendChild(alertDiv);
       }
     }
-    function updateAdditionalBlock(){
-      const httpRequest = new XMLHttpRequest();
-      httpRequest.open("PUT", "/additionalBlock", true);
-      httpRequest.setRequestHeader("Content-Type","application/json");
 
+    function updateAdditionalBlock(){
       let additionalBlockId = document.getElementById("additionalBlockId").value;
       let additionalBlockName = document.getElementById("additionalBlockName");
       let additionalBlockDescription = document.getElementById("additionalBlockDescription");
@@ -133,20 +228,94 @@
           break;
         }
       }
-      httpRequest.onreadystatechange = function(){
-        if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-          loadAdditionalBlock();
-        }
-      };
-      let body = {
-        "id": additionalBlockId,
-        "name": additionalBlockName.value,
-        "description":additionalBlockDescription.value,
-        "conditionType":JSON.parse("{"+'"id":'+ selectedConditionTypeIs+"}"),
-        "dish":JSON.parse("{"+'"id":'+ document.getElementById("additionalBlockDishId").value+"}")
-      };
-      body = JSON.stringify(body);
-      httpRequest.send(body);
+      if(additionalBlockName.value===""){
+        showAlertForUpdatingAdditionalBlockOrDishOrJustNewDish("danger","Fill the block for name","block");
+      }else if(additionalBlockDescription.value===""){
+        showAlertForUpdatingAdditionalBlockOrDishOrJustNewDish("danger","Fill the block for description","block");
+      }else if(selectedConditionTypeIs===""){
+        showAlertForUpdatingAdditionalBlockOrDishOrJustNewDish("danger","Choose the condition type","block");
+      }else{
+        const httpRequest = new XMLHttpRequest();
+        httpRequest.open("PUT", "/additionalBlock", true);
+        httpRequest.setRequestHeader("Content-Type","application/json");
+
+        httpRequest.onreadystatechange = function(){
+          if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+            loadAdditionalBlock();
+          }
+        };
+        let body = {
+          "id": additionalBlockId,
+          "name": additionalBlockName.value,
+          "description":additionalBlockDescription.value,
+          "conditionType":JSON.parse("{"+'"id":'+ selectedConditionTypeIs+"}"),
+          "dish":JSON.parse("{"+'"id":'+ document.getElementById("additionalBlockDishId").value+"}")
+        };
+        body = JSON.stringify(body);
+        httpRequest.send(body);
+      }
+    }
+
+    function updateAdditionalDish(){
+      let additionalDishId = document.getElementById("additionalDishId").value;
+      let additionalBlockId = document.getElementById("additionalBlockId").value;
+      let additionalDishName = document.getElementById("additionalDishName");
+      let additionalDishPrice = document.getElementById("additionalDishPrice");
+      if(additionalDishName.value===""){
+        showAlertForUpdatingAdditionalBlockOrDishOrJustNewDish("danger","Fill the input for name","dish");
+      }else if(additionalDishPrice.value===""){
+        showAlertForUpdatingAdditionalBlockOrDishOrJustNewDish("danger","Fill the input for price","dish");
+      }else{
+        const httpRequest = new XMLHttpRequest();
+        httpRequest.open("PUT", "/additionalDish", true);
+        httpRequest.setRequestHeader("Content-Type","application/json");
+
+        httpRequest.onreadystatechange = function(){
+          if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+            loadAdditionalDishes();
+          }
+        };
+        let body = {
+          "id": additionalDishId,
+          "name": additionalDishName.value,
+          "price":additionalDishPrice.value,
+          "additionalBlock":JSON.parse("{"+'"id":'+ additionalBlockId +"}")
+        };
+        body = JSON.stringify(body);
+        httpRequest.send(body);
+      }
+    }
+    function addNewAdditionalDish(){
+      document.getElementById("alertForCreatingNewAdditionalDish").innerHTML = "";
+      let newAdditionalDishName = document.getElementById("newAdditionalDishName");
+      let newAdditionalDishPrice = document.getElementById("newAdditionalDishPrice");
+      let additionalBlock = "{" + '"id":'+ document.getElementById("additionalBlockId").value + "}";
+
+      if (newAdditionalDishName.value === "") {
+        showAlertForUpdatingAdditionalBlockOrDishOrJustNewDish("danger", "Write additional dish name!","new");
+      } else if (newAdditionalDishPrice.value === "") {
+        showAlertForUpdatingAdditionalBlockOrDishOrJustNewDish("danger", "Write additional dish price!","new");
+      } else{
+        showAlertForUpdatingAdditionalBlockOrDishOrJustNewDish("success", "Dish added successfully!","new");
+        const httpRequest = new XMLHttpRequest();
+        httpRequest.open("POST", "/additionalDish", true);
+        httpRequest.setRequestHeader("Content-Type", "application/json");
+
+        httpRequest.onreadystatechange = function () {
+          if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+            newAdditionalDishName.value = "";
+            newAdditionalDishPrice.value = "";
+            loadAdditionalDishes();
+          }
+        };
+        let body = {
+          "name": newAdditionalDishName.value,
+          "price": newAdditionalDishPrice.value,
+          "additionalBlock":JSON.parse(additionalBlock)
+        };
+        body = JSON.stringify(body);
+        httpRequest.send(body);
+      }
     }
     function openAdditionalBlockDetailsModal(additionalBlockId){
       document.getElementById("alertForUpdatingFormAdditionalBlock").innerHTML = "";
@@ -171,6 +340,23 @@
       };
       httpRequest.send();
     }
+    function openAdditionalDishDetailsModal(additionalDishId){
+      document.getElementById("alertForUpdatingFormAdditionalDish").innerHTML = "";
+      document.getElementById("additionalDishId").value=additionalDishId;
+
+      modalForAdditionalDish = new bootstrap.Modal(document.getElementById('detailsModalForAdditionalDish'));
+      const httpRequest = new XMLHttpRequest();
+      httpRequest.open("GET","/additionalDish/"+additionalDishId,true);
+      httpRequest.onreadystatechange = function() {
+        if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+          let result = JSON.parse(httpRequest.responseText);
+          document.getElementById("additionalDishName").value = result.name;
+          document.getElementById("additionalDishPrice").value = result.price;
+          modalForAdditionalDish.show();
+        }
+      };
+      httpRequest.send();
+    }
 
     loadAdditionalBlock();
     function loadAdditionalBlock() {
@@ -191,6 +377,27 @@
           document.getElementById("additionalBlockBody").innerHTML = tableContent;
         }
       };
+      httpRequest.send();
+    }
+    loadAdditionalDishes();
+    function loadAdditionalDishes(){
+      const httpRequest = new XMLHttpRequest();
+      httpRequest.open("GET","/additionalDish/additionalBlock/"+document.getElementById("additionalBlockId").value,true);
+      httpRequest.onreadystatechange = function(){
+        if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+          let additionalDish = JSON.parse(httpRequest.responseText);
+          let tableContent = "";
+          for(let i = 0;i<additionalDish.length;i++) {
+            tableContent += "<tr>";
+              tableContent += "<td>" + additionalDish[i].id + "</td>";
+              tableContent += "<td>" + additionalDish[i].name + "</td>";
+              tableContent += "<td>" + additionalDish[i].price + "</td>";
+              tableContent += "<td><button class='btn btn-primary btn-sm' onclick='openAdditionalDishDetailsModal(" + additionalDish[i].id + ")'>Edit</button></td>";
+            tableContent += "</tr>";
+          }
+          document.getElementById("additionalDishBody").innerHTML = tableContent;
+        }
+      }
       httpRequest.send();
     }
   </script>

@@ -31,7 +31,4 @@ public class Additional_blockService {
     public void deleteAdditionalBlock(Long id){
         additionalBlockRepository.deleteById(id);
     }
-    public void deleteAdditionalBlockByTakingIntoAccountDish(Long id){
-        additionalBlockRepository.deleteAllByDishId(id);
-    }
 }

@@ -386,6 +386,9 @@
                     httpRequest.setRequestHeader("Content-Type","application/json");
                     httpRequest.onreadystatechange = function(){
                         if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                            document.getElementById("responseToSearchingRestaurant").innerHTML = "";
+                            document.getElementById("searchRestaurantByEmail").innerHTML = "";
+                            modalForRestaurant.hide();
                             loadRestaurants();
                         }
                     };
@@ -406,24 +409,15 @@
                     let approve = confirm("Are you sure?");
                     if(approve){
                         let restaurantId = document.getElementById("restaurantId").value;
-                        alert(restaurantId + " you have not finished, yet!");
-                        // const httpRequest1 = new XMLHttpRequest();
-                        // httpRequest1.open("DELETE","/dish/restaurant/"+restaurantId,true);
-                        // httpRequest1.onreadystatechange = function(){
-                        //     if(httpRequest1.readyState===XMLHttpRequest.DONE && httpRequest1.status===200){
-                        //         alert("All dishes successfully deleted from your data base, before deleting chosen restaurant");
-                        //     }
-                        // }
-                        // const httpRequest = new XMLHttpRequest();
-                        // httpRequest.open("DELETE", "/restaurant/"+restaurantId, true);
-                        // httpRequest.onreadystatechange = function(){
-                        //     if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-                        //         alert("This restaurant successfully deleted from your data base");
-                        //         modalForRestaurant.hide();
-                        //         loadRestaurants();
-                        //     }
-                        // };
-                        // httpRequest.send();
+                        const httpRequest = new XMLHttpRequest();
+                        httpRequest.open("DELETE", "/restaurant/"+restaurantId, true);
+                        httpRequest.onreadystatechange = function(){
+                            if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                modalForRestaurant.hide();
+                                loadRestaurants();
+                            }
+                        };
+                        httpRequest.send();
                     }
                 }
             </script>

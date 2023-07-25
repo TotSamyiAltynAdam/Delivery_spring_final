@@ -2,6 +2,7 @@ package kz.yeldos.delivery.api;
 
 import kz.yeldos.delivery.dto.Additional_blockDTO;
 import kz.yeldos.delivery.service.Additional_blockService;
+import kz.yeldos.delivery.service.Additional_dishService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +13,7 @@ import java.util.List;
 @RequestMapping(value = "/additionalBlock")
 public class AdditionalBlockRestController {
     private final Additional_blockService additionalBlockService;
+    private final Additional_dishService additionalDishService;
     @GetMapping
     public List<Additional_blockDTO> getAdditionalBlockList(){
         return additionalBlockService.getAdditionalBlocks();
@@ -34,11 +36,8 @@ public class AdditionalBlockRestController {
         return additionalBlockService.updateAdditionalBlock(additionalBlockDTO);
     }
     @DeleteMapping(value = "{id}")
-    public void deleteAdditionalBlock(@PathVariable(name="id") Long id){
-        additionalBlockService.deleteAdditionalBlock(id);
-    }
-    @DeleteMapping(value="/dish/{id}")
-    public void deleteAdditionalBlockRelatedToTheDish(@PathVariable(name="id") Long id){
-        additionalBlockService.deleteAdditionalBlockByTakingIntoAccountDish(id);
+    public void deleteAdditionalBlock(@PathVariable(name="id") Long additionalBlockId){
+        additionalDishService.deleteAdditionalDishesByAdditionalBlock(additionalBlockId);
+        additionalBlockService.deleteAdditionalBlock(additionalBlockId);
     }
 }

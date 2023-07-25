@@ -1,6 +1,9 @@
 package kz.yeldos.delivery.api;
 
+import kz.yeldos.delivery.dto.Additional_blockDTO;
 import kz.yeldos.delivery.dto.DishDTO;
+import kz.yeldos.delivery.service.Additional_blockService;
+import kz.yeldos.delivery.service.Additional_dishService;
 import kz.yeldos.delivery.service.DishService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +15,8 @@ import java.util.List;
 @RequestMapping(value="/dish")
 public class DishRestController {
     private final DishService dishService;
-
+    private final Additional_blockService additionalBlockService;
+    private final Additional_dishService additionalDishService;
     @GetMapping
     public List<DishDTO> getDishes(){
         return dishService.getDishes();
@@ -30,12 +34,13 @@ public class DishRestController {
         return dishService.updateDish(dishDTO);
     }
     @DeleteMapping(value="{id}")
-    public void deleteDish(@PathVariable(name="id") Long id){
-        dishService.deleteDish(id);
-    }
-    @DeleteMapping(value="/restaurant/{id}")
-    public void deleteDishesLocatedInDeletedRestaurant(@PathVariable(name="id") Long id){
-        dishService.deleteDishesLocatedInDeletedRestaurant(id);
+    public void deleteDish(@PathVariable(name="id") Long dishId){
+        List<Additional_blockDTO> additionalBlockDTOList = additionalBlockService.getAdditionalBlocksRelatedToTheParticularDish(dishId);
+        for (Additional_blockDTO additionalBlockDTO : additionalBlockDTOList) {
+            additionalDishService.deleteAdditionalDishesByAdditionalBlock(additionalBlockDTO.getId());
+            additionalBlockService.deleteAdditionalBlock(additionalBlockDTO.getId());
+        }
+        dishService.deleteDish(dishId);
     }
     @DeleteMapping(value="/dishType/{id}")
     public void deleteDishTypeFromDishes(@PathVariable(name="id") Long dishTypeId){

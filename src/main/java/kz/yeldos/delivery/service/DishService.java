@@ -40,8 +40,8 @@ public class DishService {
             dishRepository.save(dish);
         }
     }
-    public List<DishDTO> findDishesWhereRestaurant(Long id){
-        return dishMapper.toDtoList(dishRepository.findAllByRestaurantId(id));
+    public List<DishDTO> findDishesWhereRestaurant(Long restaurantId){
+        return dishMapper.toDtoList(dishRepository.findAllByRestaurantId(restaurantId));
     }
     public List<DishDTO> findDishesWhereRestaurantAndDishType(Long restaurantId,Long dishTypeId){
         return dishMapper.toDtoList(dishRepository.findAllByRestaurantIdAndDishType_Id(restaurantId,dishTypeId));

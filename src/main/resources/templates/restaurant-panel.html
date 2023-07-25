@@ -147,7 +147,7 @@
                     </div>
                 </div>
                 <div class="modal fade" id="detailsModalForAdditionalBlock" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel2" aria-hidden="true">
-                    <div class="modal-dialog">
+                    <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h1 class="modal-title fs-5" id="staticBackdropLabel2">Additional Block details</h1>
@@ -164,6 +164,7 @@
                                         <th>condition</th>
                                         <th>dish</th>
                                         <th>DETAILS</th>
+                                        <th>DELETE</th>
                                     </tr>
                                     </thead>
                                     <tbody id="additionalBlockListBody">
@@ -237,24 +238,16 @@
                     function deleteDish(){
                         let approve = confirm("Are you sure?");
                         if(approve){
-                            alert("You have not finished yet!");
-                            // let dishId = document.getElementById("dishId").value;
-                            // const httpRequest1 = new XMLHttpRequest();
-                            // httpRequest1.open("DELETE","/additionalBlock/dish/"+dishId,false);
-                            // httpRequest1.onreadystatechange = function(){
-                            //     if(httpRequest1.readyState===XMLHttpRequest.DONE && httpRequest1.status===200){
-                            //         alert("All additional blocks located in the deleted dish were deleted");
-                            //     }
-                            // }
-                            // httpRequest1.send();
-                            // const httpRequest = new XMLHttpRequest();
-                            // httpRequest.open("DELETE","/dish/"+dishId,true);
-                            // httpRequest.onreadystatechange = function(){
-                            //     if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-                            //         loadDishes();
-                            //     }
-                            // };
-                            // httpRequest.send();
+                            let dishId = document.getElementById("dishId").value;
+                            const httpRequest = new XMLHttpRequest();
+                            httpRequest.open("DELETE","/dish/"+dishId,true);
+                            httpRequest.onreadystatechange = function(){
+                                if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                    modalForDish.hide();
+                                    loadDishes();
+                                }
+                            };
+                            httpRequest.send();
                         }
                     }
                     function updateDish(){
@@ -277,6 +270,7 @@
 
                         httpRequest.onreadystatechange = function(){
                             if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                modalForDish.hide();
                                 loadDishes();
                             }
                         };
@@ -315,6 +309,19 @@
                         }
                         httpRequest.send();
                     }
+                    function deleteAdditionalBlock(additionalBlockId,dishId) {
+                        let approve = confirm("Are you sure?");
+                        if (approve) {
+                            const httpRequest = new XMLHttpRequest();
+                            httpRequest.open("DELETE", "/additionalBlock/" + additionalBlockId, true);
+                            httpRequest.onreadystatechange = function () {
+                                if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+                                    loadAdditionalBlocksInSpecifiedDish(dishId)
+                                }
+                            };
+                            httpRequest.send();
+                        }
+                    }
                     function loadAdditionalBlocksInSpecifiedDish(dishId){
                         const httpRequest = new XMLHttpRequest();
                         httpRequest.open("GET","/additionalBlock/dish/"+dishId,false);
@@ -330,6 +337,7 @@
                                     tableContent+="<td>"+additionalBlockList[i].conditionType.type+"</td>";
                                     tableContent+="<td>"+additionalBlockList[i].dish.name+"</td>";
                                     tableContent+="<td><a href=\"/show-me-additional-dishes-relatedToAdditionalBlock/" + additionalBlockList[i].id + "\">Details</a></td>";
+                                    tableContent+="<td><button class='btn btn-danger btn-sm' onclick='deleteAdditionalBlock("+additionalBlockList[i].id+","+dishId+")'>DELETE</button></td>";
                                     tableContent+="</tr>";
                                 }
                                 document.getElementById("additionalBlockListBody").innerHTML = tableContent;
