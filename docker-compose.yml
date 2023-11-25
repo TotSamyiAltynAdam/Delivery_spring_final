@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysqldb
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: deliveryspringfinal
+      MYSQL_ROOT_PASSWORD: ec2-hTS-BMm-fUT
+      MYSQL_USER: yeldos
+      MYSQL_PASSWORD: ec2-hTS-BMm-fUT
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
