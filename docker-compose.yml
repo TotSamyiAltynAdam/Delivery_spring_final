@@ -7,7 +7,7 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: deliveryspringfinal
+      MYSQL_DATABASE: glovodata
       MYSQL_ROOT_PASSWORD: ec2-hTS-BMm-fUT
       MYSQL_USER: yeldos
       MYSQL_PASSWORD: ec2-hTS-BMm-fUT
