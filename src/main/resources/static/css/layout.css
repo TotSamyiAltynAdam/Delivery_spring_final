@@ -1,0 +1,89 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color:rgb(255, 194, 61);
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 30px 20px;
+}
+header .left{
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
+header .left .logo{
+    margin-left: 70px;
+    margin-right: 30px;
+}
+header .left .logo a {
+    text-decoration: none;
+}
+header .left .logo img {
+    width: 130px; /* Adjust the width as needed */
+}
+
+header .left ul li a {
+    text-decoration: none;
+    color: darkgreen;
+}
+header .left ul li a:hover {
+    color: white;
+}
+
+header .user-info {
+    display: flex;
+    margin-right: 70px;
+}
+header .user-info .user-info-account img, header .user-info .user-info-menu img {
+    width: 40px;
+    height: auto;
+}
+header .user-info .user-info-menu img {
+    margin-left: 10px;
+}
+
+
+
+.main .main_title {
+    font-size: 45px;
+    margin: 35px;
+    text-align: center;
+}
+
+.main .main_cards{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.main .main_cards .main_cards_card{
+    width: 110px;
+    height: 110px;
+    margin: 0 30px;
+    background-color: aliceblue;
+    border-radius: 56% 44% 45% 55%/58% 53% 47% 42%;
+    cursor: pointer;
+}
+
+.main .main_cards .main_cards_card a{
+    text-decoration: none;
+    color: rgb(11, 11, 11);
+}
+.main .main_cards .main_cards_card img{
+    width: 70px;
+    display: block;
+    margin: 17px auto;
+}
+.main .main_cards .main_cards_card .main_cards_card_text{
+    margin-top: 35px;
+}

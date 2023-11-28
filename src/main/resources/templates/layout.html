@@ -5,56 +5,79 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
     <head>
         <meta charset="UTF-8">
-        <title>Title</title>
+        <title>Yeldos's App</title>
         <link rel="stylesheet" type="text/css" th:href="@{'/css/bootstrap.min.css'}">
+        <link rel="stylesheet" th:href="@{'/css/layout.css'}">
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg bg-warning">
-            <div class="container-fluid">
-                <a class="navbar-brand" th:href="@{'/'}">Delivery</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link" th:href="@{'/'}">Home</a>
-                        </li>
-                        <li class="nav-item" sec:authorize="isAnonymous()">
-                            <a class="nav-link"  th:href="@{'/sign-in-page'}">Sign In</a>
-                        </li>
-                        <li class="nav-item" sec:authorize="isAnonymous()">
-                            <a class="nav-link"  th:href="@{'/sign-up-page'}">Sign Up</a>
-                        </li>
-                        <li class="nav-item" sec:authorize="hasAnyRole('ROLE_ADMIN')">
-                            <a class="nav-link"  th:href="@{'/admin-panel'}">Admin Panel</a>
-                        </li>
-                        <li class="nav-item" sec:authorize="hasAnyRole('ROLE_RESTAURANT')">
-                            <a class="nav-link"  th:href="@{'/restaurant-panel'}">Restaurant Panel</a>
-                        </li>
-                        <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                              <span th:text="${#authentication.principal.fullName}"></span>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" th:href="@{'/update-fullName-page'}">Update Name</a></li>
-                                <li><a class="dropdown-item" th:href="@{'/update-password-page'}">Update Password</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form th:action="@{'/sign-out'}" method="post">
-                                        <button class="dropdown-item">Sign Out</button>
-                                    </form>
+        <div class="container">
+            <header>
+                <div class="left">
+                    <div class="logo">
+                        <a th:href="@{'/'}">
+                            <img th:src="@{'/img/Glovo_logo.png'}" alt="Glovo_logo">
+                        </a>
+                    </div>
+                    <nav class="navbar navbar-expand-lg">
+                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                <li class="nav-item" sec:authorize="isAnonymous()">
+                                    <a class="nav-link" th:href="@{'/sign-in-page'}">Sign In</a>
+                                </li>
+                                <li class="nav-item" sec:authorize="isAnonymous()">
+                                    <a class="nav-link"  th:href="@{'/sign-up-page'}">Sign Up</a>
+                                </li>
+                                <li class="nav-item" sec:authorize="hasAnyRole('ROLE_ADMIN')">
+                                    <a class="nav-link"  th:href="@{'/admin-panel'}">Admin Panel</a>
+                                </li>
+                                <li class="nav-item" sec:authorize="hasAnyRole('ROLE_RESTAURANT')">
+                                    <a class="nav-link"  th:href="@{'/restaurant-panel'}">Restaurant Panel</a>
+                                </li>
+                                <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span th:text="${#authentication.principal.fullName}"></span>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" th:href="@{'/update-fullName-page'}">Update Name</a></li>
+                                        <li><a class="dropdown-item" th:href="@{'/update-password-page'}">Update Password</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form th:action="@{'/sign-out'}" method="post">
+                                                <button class="dropdown-item">Sign Out</button>
+                                            </form>
+                                        </li>
+                                    </ul>
                                 </li>
                             </ul>
-                        </li>
-                    </ul>
-                    <form class="d-flex" role="search">
-                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                        <button class="btn btn-outline-success" type="submit">Search</button>
-                    </form>
+                        </div>
+                    </nav>
                 </div>
-            </div>
-        </nav>
+                <div class="user-info">
+                    <div class="user-info-account">
+                        <a href="#">
+                            <img src="https://res.cloudinary.com/glovoapp/image/fetch/f_svg,q_auto:low/https://glovoapp.com/images/svg/profile-icon_new.svg" alt="User Account">
+                        </a>
+                    </div>
+                    <div class="user-info-menu">
+                        <a href="#">
+                            <img src="https://res.cloudinary.com/glovoapp/image/fetch/f_svg,q_auto:low/https://glovoapp.com/images/svg/orders-icon_new.svg">
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            <section class="main">
+                <h1 class="main_title">Доставка в городе Алматы</h1>
+                <div class="main_cards">
+                    <div class="main_cards_card">
+                        <a th:href="@{'/show-me-restaurants'}">
+                            <img src="https://images.deliveryhero.io/image/customer-assets-glovo/category_icons/634ad72df44f6e1d591c4a8bb725a95a8d2f6b704f0997ee65b351e50ef58dd2?t=W3siYXV0byI6eyJxIjoiaGlnaCJ9fSx7InJlc2l6ZSI6eyJtb2RlIjoiZml0Iiwid2lkdGgiOjEyMCwiaGVpZ2h0IjoxMjB9fV0=">
+                            <h2 class="main_cards_card_text">Еда</h2>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
         <div class="container mt-5">
             <div class="row">
                 <div class="col-12">
