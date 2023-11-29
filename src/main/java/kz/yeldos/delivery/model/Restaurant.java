@@ -19,6 +19,9 @@ public class Restaurant extends BaseModel{
     @Column(name="address")
     private String address;
 
+    @Column(name="photo")
+    private String photo;
+
     @ManyToMany
     private List<Category> categoryList;
 

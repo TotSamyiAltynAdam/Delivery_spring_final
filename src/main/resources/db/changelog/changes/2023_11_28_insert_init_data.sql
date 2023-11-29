@@ -9,5 +9,5 @@ INSERT INTO t_users_permissions (user_id, permissions_id)
 VALUES (1,1);
 
 
-INSERT INTO t_restaurants (address, name, ratings, user_email)
-VALUES ('Bahandir address','Bahandi',0,'bahandi@gmail.com')
+INSERT INTO t_restaurants (address, name, photo, ratings, user_email)
+VALUES ('Bahandir address','Bahandi','pathtophoto', 0,'bahandi@gmail.com')

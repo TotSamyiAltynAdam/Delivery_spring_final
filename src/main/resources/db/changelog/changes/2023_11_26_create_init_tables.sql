@@ -27,6 +27,7 @@ create table t_restaurants (
     id         bigint auto_increment        primary key,
     address    varchar(255) null,
     name       varchar(255) null,
+    photo      varchar(255) null,
     ratings    int          null,
     user_email varchar(255) null
 );
