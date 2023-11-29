@@ -3,480 +3,627 @@
       xlmns:th="http://www.thymeleaf.org" xmlns:xlmns="http://www.w3.org/1999/xhtml"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="layout.html">
+    <head>
+        <link rel="stylesheet" th:href="@{'/css/restaurants.css'}">
+    </head>
     <div layout:fragment="content">
-        <input type="hidden" id="restaurantId">
-        <div class="row mb-3" sec:authorize="hasAnyRole('ROLE_ADMIN')">
-            <div class="col-6" style="border: 1px solid gray; border-radius: 7px;">
-                <div class="row mt-3">
-                    <div class="col-12" id="alertForFillingFormForAddingRestaurant">
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-12">
-                       <label for="restaurantName">NAME:</label>
-                    </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="col-12">
-                        <input type="text" id="restaurantName" class="form-control" required>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <label for="restaurantRatings">RATINGS:</label>
-                    </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="col-12">
-                        <input type="number" class="form-control" id="restaurantRatings" th:value="0" disabled>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-12">
-                       <label for="restaurantAddress">ADDRESS:</label>
-                    </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="col-12">
-                        <input type="text" class="form-control" id="restaurantAddress" required>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <label for="restaurantOwner" class="form-label">OWNER EMAIL:</label>
-                    </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="col-12">
-                        <input type="email" class="form-control" id="restaurantOwner" required>
-                    </div>
-                </div>
-
-                <div class="form-check form-switch mt-3" id="categoryForCreationOfRestaurant">
-                </div>
-                <script type="text/javascript">
-                    loadCategories();
-                    categoryIdStorage = [];
-                    var categoryLength = 0;
-                    function loadCategories(){
-                        const httpRequest = new XMLHttpRequest();
-                        httpRequest.open("GET","/category",true);
-                        httpRequest.onreadystatechange = function(){
-                            if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-                                let categoryList = JSON.parse(httpRequest.responseText);
-                                let categorySelectionContent = "";
-                                categoryLength = categoryList.length;
-                                for(let i = 0;i<categoryLength;i++){
-                                    categorySelectionContent+="<input class='form-check-input' type='checkbox' role='switch' id=restaurantCategory"+i+">";
-                                    categorySelectionContent+="<label class='form-check-label' for=restaurantCategory"+i+">"+categoryList[i].name+"</label><br>";
-                                    categoryIdStorage[i] = categoryList[i].id;
-                                }
-                                document.getElementById("categoryForCreationOfRestaurant").innerHTML = categorySelectionContent;
-                            }
-                        };
-                        httpRequest.send();
-                    }
-                </script>
-                <div class="row mt-3 mb-3">
-                    <div class="col-12">
-                       <button class="btn btn-success text-center" onclick="addRestaurant()">ADD RESTAURANT</button>
-                    </div>
-                    <script type="text/javascript">
-                        var categoriesContent = "";
-                        function findSelectedCheckboxes(i){
-                            const httpRequest = new XMLHttpRequest();
-                            httpRequest.open("GET","/category/"+categoryIdStorage[i], false);
-                            httpRequest.onreadystatechange = function(){
-                                if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-                                    let result = JSON.parse(httpRequest.responseText);
-                                    categoriesContent+="{";
-                                    categoriesContent+='"id":'+result.id+",";
-                                    categoriesContent+='"name":"'+result.name+'"';
-                                    categoriesContent+="},";
-                                }
-                            };
-                            httpRequest.send();
-                        }
-
-                        function addRestaurant(){
-                            let restaurantName = document.getElementById("restaurantName");
-                            let restaurantRatings = document.getElementById("restaurantRatings");
-                            let restaurantAddress = document.getElementById("restaurantAddress");
-                            let restaurantOwner = document.getElementById("restaurantOwner");
-
-                            if(restaurantName.value==="") {
-                                showAlertForAddingRestaurant("danger","Write Restaurant name!");
-                            }else if(restaurantAddress.value===""){
-                                showAlertForAddingRestaurant("danger","Write a Restaurant address!");
-                            } else if(restaurantOwner.value===""){
-                                showAlertForAddingRestaurant("danger","Write Restaurant Owner Email!");
-                            } else{
-                                showAlertForAddingRestaurant("success","Restaurant added successfully!");
-                                for (let i = 0; i < categoryLength; i++) {
-                                    if (document.getElementById("restaurantCategory" + i).checked) {
-                                        findSelectedCheckboxes(i)
-                                    }
-                                }
-                                if (categoriesContent.length > 0) categoriesContent = categoriesContent.slice(0, -1);
-
-                                const httpRequest = new XMLHttpRequest();
-                                httpRequest.open("POST", "/restaurant", true);
-                                httpRequest.setRequestHeader("Content-Type", "application/json");
-
-                                httpRequest.onreadystatechange = function () {
-                                    if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
-                                        restaurantName.value = "";
-                                        restaurantAddress.value = "";
-                                        for (let i = 0; i < categoryLength; i++) {
-                                            let currentCheckBox = document.getElementById("restaurantCategory" + i);
-                                            if (currentCheckBox.checked) {
-                                                currentCheckBox.checked = false;
-                                            }
-                                        }
-                                        loadRestaurants();
-                                    }
-                                };
-                                let body = {
-                                    "name": restaurantName.value,
-                                    "ratings": restaurantRatings.value,
-                                    "address": restaurantAddress.value,
-                                    "userEmail": restaurantOwner.value,
-                                    "categories": JSON.parse("[" + categoriesContent + "]")
-                                };
-                                categoriesContent = "";
-                                body = JSON.stringify(body);
-                                httpRequest.send(body);
-                            }
-                        }
-                        function showAlertForAddingRestaurant(type, message) {
-                            document.getElementById("alertForFillingFormForAddingRestaurant").innerHTML = "";
-
-                            let alertDiv = document.createElement("div");
-                            alertDiv.classList.add("alert", "alert-" + type, "alert-dismissible", "fade", "show");
-                            alertDiv.setAttribute("role", "alert");
-
-                            let strongTag = document.createElement("strong");
-                            strongTag.textContent = message;
-                            alertDiv.appendChild(strongTag);
-
-                            let closeButton = document.createElement("button");
-                            closeButton.setAttribute("type", "button");
-                            closeButton.classList.add("btn-close");
-                            closeButton.setAttribute("data-bs-dismiss", "alert");
-                            closeButton.setAttribute("aria-label", "Close");
-                            alertDiv.appendChild(closeButton);
-
-                            document.getElementById("alertForFillingFormForAddingRestaurant").appendChild(alertDiv);
-                        }
-
-                    </script>
-                </div>
-            </div>
-            <div class="col-6" style="border: 1px solid gray; border-radius: 7px;">
-                <div class="row mt-3">
-                    <div class="col-12" id="responseToSearchingRestaurant">
-                    </div>
-                    <div class="modal fade" id="detailsModalForRestaurant" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Restaurant details</h1>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="row mt-3">
-                                        <div class="col-12">
-                                            <label for="restaurantNameInDetail">Restaurant name:</label>
-                                        </div>
-                                    </div>
-                                    <div class="row mt-2">
-                                        <div class="col-12">
-                                            <input type="text" id="restaurantNameInDetail" class="form-control">
-                                        </div>
-                                    </div>
-                                    <div class="row mt-3">
-                                        <div class="col-12">
-                                            <label for="restaurantRatingsInDetail">Restaurant ratings:</label>
-                                        </div>
-                                    </div>
-                                    <div class="row mt-2">
-                                        <div class="col-12">
-                                            <input type="text" id="restaurantRatingsInDetail" class="form-control" disabled>
-                                        </div>
-                                    </div>
-                                    <div class="row mt-3">
-                                        <div class="col-12">
-                                            <label for="restaurantAddressInDetail">Restaurant address:</label>
-                                        </div>
-                                    </div>
-                                    <div class="row mt-2">
-                                        <div class="col-12">
-                                            <input type="text" id="restaurantAddressInDetail" class="form-control">
-                                        </div>
-                                    </div>
-                                    <div class="row mt-3">
-                                        <div class="col-12">
-                                            <label for="restaurantOwnerEmailInDetail">Restaurant Owner Email:</label>
-                                        </div>
-                                    </div>
-                                    <div class="row mt-2">
-                                        <div class="col-12">
-                                            <input type="text" id="restaurantOwnerEmailInDetail" class="form-control">
-                                        </div>
-                                    </div>
-                                    <div class="form-check form-switch mt-3" id="restaurantCategoryInDetail">
-                                    </div>
-
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="deleteRestaurant()">DELETE</button>
-                                    <button type="button" class="btn btn-primary" onclick="updateRestaurant()">UPDATE</button>
-                                </div>
-                            </div>
+        <div class="restaurant_content">
+            <input type="hidden" id="restaurantId">
+            <div class="row mb-3" sec:authorize="hasAnyRole('ROLE_ADMIN')">
+                <div class="col-6" style="border: 1px solid darkgreen; border-radius: 7px;">
+                    <div class="row mt-3">
+                        <div class="col-12" id="alertForFillingFormForAddingRestaurant">
                         </div>
                     </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                           <label for="restaurantName">NAME:</label>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <input type="text" id="restaurantName" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label for="restaurantRatings">RATINGS:</label>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <input type="number" class="form-control" id="restaurantRatings" th:value="0" disabled>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                           <label for="restaurantAddress">ADDRESS:</label>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <input type="text" class="form-control" id="restaurantAddress" required>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label for="restaurantOwner" class="form-label">OWNER EMAIL:</label>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <input type="email" class="form-control" id="restaurantOwner" required>
+                        </div>
+                    </div>
+
+                    <div class="form-check form-switch mt-3" id="categoryForCreationOfRestaurant">
+                    </div>
                     <script type="text/javascript">
-                        loadUpdatedCategories();
-                        updatedCategoryIdStorage = [];
-                        var updatedCategoryLength = 0;
-                        function loadUpdatedCategories(){
+                        loadCategories();
+                        categoryIdStorage = [];
+                        var categoryLength = 0;
+                        function loadCategories(){
                             const httpRequest = new XMLHttpRequest();
                             httpRequest.open("GET","/category",true);
                             httpRequest.onreadystatechange = function(){
                                 if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
                                     let categoryList = JSON.parse(httpRequest.responseText);
                                     let categorySelectionContent = "";
-                                    updatedCategoryLength = categoryList.length;
-                                    for(let i = 0;i<updatedCategoryLength;i++){
-                                        categorySelectionContent+="<input class='form-check-input' type='checkbox' role='switch' id=updatedRestaurantCategory-"+i+">";
-                                        categorySelectionContent+="<label class='form-check-label' for=updatedRestaurantCategory-"+i+">"+categoryList[i].name+"</label><br>";
-                                        updatedCategoryIdStorage[i] = categoryList[i].id;
+                                    categoryLength = categoryList.length;
+                                    for(let i = 0;i<categoryLength;i++){
+                                        categorySelectionContent+="<input class='form-check-input' type='checkbox' role='switch' id=restaurantCategory"+i+">";
+                                        categorySelectionContent+="<label class='form-check-label' for=restaurantCategory"+i+">"+categoryList[i].name+"</label><br>";
+                                        categoryIdStorage[i] = categoryList[i].id;
                                     }
-                                    document.getElementById("restaurantCategoryInDetail").innerHTML = categorySelectionContent;
+                                    document.getElementById("categoryForCreationOfRestaurant").innerHTML = categorySelectionContent;
                                 }
                             };
                             httpRequest.send();
                         }
                     </script>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <label for="searchRestaurantByEmail" class="form-label">Search Restaurant by email:</label>
-                    </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="col-12">
-                        <input type="email" class="form-control" id="searchRestaurantByEmail" required>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <button class="btn btn-success text-center" onclick="searchRestaurant()">Search</button>
-                    </div>
-                </div>
-            </div>
-            <script type="text/javascript">
-                function searchRestaurant(){
-                    const httpRequest = new XMLHttpRequest();
-                    httpRequest.open("GET","/restaurant/email/"+document.getElementById("searchRestaurantByEmail").value,true);
-                    httpRequest.onreadystatechange = function(){
-                        if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-                            if(httpRequest.responseText.length!==0) {
-                                let restaurant = JSON.parse(httpRequest.responseText);
-                                showAlertAndButton("success", "Restaurant found by email",restaurant.id);
-                            }else{
-                                showAlertAndButton("danger","Email not found",-1);
-                            }
-                        }
-                    };
-                    httpRequest.send();
-                }
-                function showAlertAndButton(type, message, restaurantId) {
-                    document.getElementById("responseToSearchingRestaurant").innerHTML = "";
-
-                    let responseContainer = document.createElement("div");
-                    let alertDiv = document.createElement("div");
-                    alertDiv.classList.add("alert", "alert-" + type, "alert-dismissible", "fade", "show");
-                    alertDiv.setAttribute("role", "alert");
-
-                    let strongTag = document.createElement("strong");
-                    strongTag.textContent = message;
-                    alertDiv.appendChild(strongTag);
-
-                    let closeButton = document.createElement("button");
-                    closeButton.setAttribute("type", "button");
-                    closeButton.classList.add("btn-close");
-                    closeButton.setAttribute("data-bs-dismiss", "alert");
-                    closeButton.setAttribute("aria-label", "Close");
-                    alertDiv.appendChild(closeButton);
-                    responseContainer.appendChild(alertDiv);
-
-                    if(restaurantId!==-1) {
-                        let editButton = document.createElement("button");
-                        editButton.setAttribute("type", "button");
-                        editButton.classList.add("btn", "btn-sm", "btn-primary");
-                        editButton.textContent = "DETAILS";
-                        editButton.addEventListener("click", function () {
-                            openModalForEditingRestaurant(restaurantId);
-                        });
-                        responseContainer.appendChild(editButton);
-                    }
-                    document.getElementById("responseToSearchingRestaurant").appendChild(responseContainer);
-                }
-                function openModalForEditingRestaurant(restaurantId){
-                    modalForRestaurant = new bootstrap.Modal(document.getElementById("detailsModalForRestaurant"));
-                    const httpRequest = new XMLHttpRequest();
-                    httpRequest.open("GET","/restaurant/"+restaurantId,true);
-                    httpRequest.onreadystatechange = function(){
-                        if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-                            let result = JSON.parse(httpRequest.responseText);
-                            document.getElementById("restaurantId").value = result.id;
-                            document.getElementById("restaurantNameInDetail").value = result.name;
-                            document.getElementById("restaurantRatingsInDetail").value = result.ratings;
-                            document.getElementById("restaurantAddressInDetail").value = result.address;
-                            for(let i = 0;i<updatedCategoryLength;i++) {
-                                document.getElementById("updatedRestaurantCategory-"+i).checked = false;
-                                for (let j = 0; j < result.categories.length; j++) {
-                                    if(updatedCategoryIdStorage[i]===result.categories[j].id){
-                                        document.getElementById("updatedRestaurantCategory-"+i).checked = true;
-                                        break;
+                    <div class="row mt-3 mb-3">
+                        <div class="col-12">
+                           <button class="btn btn-success text-center" onclick="addRestaurant()">ADD RESTAURANT</button>
+                        </div>
+                        <script type="text/javascript">
+                            var categoriesContent = "";
+                            function findSelectedCheckboxes(i){
+                                const httpRequest = new XMLHttpRequest();
+                                httpRequest.open("GET","/category/"+categoryIdStorage[i], false);
+                                httpRequest.onreadystatechange = function(){
+                                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                        let result = JSON.parse(httpRequest.responseText);
+                                        categoriesContent+="{";
+                                        categoriesContent+='"id":'+result.id+",";
+                                        categoriesContent+='"name":"'+result.name+'"';
+                                        categoriesContent+="},";
                                     }
+                                };
+                                httpRequest.send();
+                            }
+
+                            function addRestaurant(){
+                                let restaurantName = document.getElementById("restaurantName");
+                                let restaurantRatings = document.getElementById("restaurantRatings");
+                                let restaurantAddress = document.getElementById("restaurantAddress");
+                                let restaurantOwner = document.getElementById("restaurantOwner");
+
+                                if(restaurantName.value==="") {
+                                    showAlertForAddingRestaurant("danger","Write Restaurant name!");
+                                }else if(restaurantAddress.value===""){
+                                    showAlertForAddingRestaurant("danger","Write a Restaurant address!");
+                                } else if(restaurantOwner.value===""){
+                                    showAlertForAddingRestaurant("danger","Write Restaurant Owner Email!");
+                                } else{
+                                    showAlertForAddingRestaurant("success","Restaurant added successfully!");
+                                    for (let i = 0; i < categoryLength; i++) {
+                                        if (document.getElementById("restaurantCategory" + i).checked) {
+                                            findSelectedCheckboxes(i)
+                                        }
+                                    }
+                                    if (categoriesContent.length > 0) categoriesContent = categoriesContent.slice(0, -1);
+
+                                    const httpRequest = new XMLHttpRequest();
+                                    httpRequest.open("POST", "/restaurant", true);
+                                    httpRequest.setRequestHeader("Content-Type", "application/json");
+
+                                    httpRequest.onreadystatechange = function () {
+                                        if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+                                            restaurantName.value = "";
+                                            restaurantAddress.value = "";
+                                            for (let i = 0; i < categoryLength; i++) {
+                                                let currentCheckBox = document.getElementById("restaurantCategory" + i);
+                                                if (currentCheckBox.checked) {
+                                                    currentCheckBox.checked = false;
+                                                }
+                                            }
+                                            loadRestaurants();
+                                        }
+                                    };
+                                    let body = {
+                                        "name": restaurantName.value,
+                                        "ratings": restaurantRatings.value,
+                                        "address": restaurantAddress.value,
+                                        "userEmail": restaurantOwner.value,
+                                        "categories": JSON.parse("[" + categoriesContent + "]")
+                                    };
+                                    categoriesContent = "";
+                                    body = JSON.stringify(body);
+                                    httpRequest.send(body);
                                 }
                             }
-                            document.getElementById("restaurantOwnerEmailInDetail").value = result.userEmail;
-                            modalForRestaurant.show();
-                        }
-                    }
-                    httpRequest.send();
-                }
-                var updatedCategoryForCurrentRestaurant = "";
-                function findSelectedUpgradedCategories(i){
-                    const httpRequest = new XMLHttpRequest();
-                    httpRequest.open("GET","/category/"+updatedCategoryIdStorage[i], false);
-                    httpRequest.onreadystatechange = function(){
-                        if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-                            let result = JSON.parse(httpRequest.responseText);
-                            updatedCategoryForCurrentRestaurant+="{";
-                            updatedCategoryForCurrentRestaurant+='"id":'+result.id+",";
-                            updatedCategoryForCurrentRestaurant+='"name":"'+result.name+'"';
-                            updatedCategoryForCurrentRestaurant+="},";
-                        }
-                    };
-                    httpRequest.send();
+                            function showAlertForAddingRestaurant(type, message) {
+                                document.getElementById("alertForFillingFormForAddingRestaurant").innerHTML = "";
 
-                }
-                function updateRestaurant(){
-                    let restaurantId = document.getElementById("restaurantId");
-                    let restaurantName = document.getElementById("restaurantNameInDetail");
-                    let restaurantRatings = document.getElementById("restaurantRatingsInDetail");
-                    let restaurantAddress = document.getElementById("restaurantAddressInDetail");
+                                let alertDiv = document.createElement("div");
+                                alertDiv.classList.add("alert", "alert-" + type, "alert-dismissible", "fade", "show");
+                                alertDiv.setAttribute("role", "alert");
 
-                    for(let i = 0;i<updatedCategoryLength;i++){
-                        if(document.getElementById("updatedRestaurantCategory-"+i).checked){
-                            findSelectedUpgradedCategories(i);
-                        }
-                    }
-                    if(updatedCategoryForCurrentRestaurant.length>0) {
-                        updatedCategoryForCurrentRestaurant = updatedCategoryForCurrentRestaurant.slice(0,-1);
-                    }
-                    let restaurantOwnerEmail = document.getElementById("restaurantOwnerEmailInDetail");
+                                let strongTag = document.createElement("strong");
+                                strongTag.textContent = message;
+                                alertDiv.appendChild(strongTag);
 
-                    const httpRequest = new XMLHttpRequest();
-                    httpRequest.open("PUT", "/restaurant", true);
-                    httpRequest.setRequestHeader("Content-Type","application/json");
-                    httpRequest.onreadystatechange = function(){
-                        if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-                            document.getElementById("responseToSearchingRestaurant").innerHTML = "";
-                            document.getElementById("searchRestaurantByEmail").innerHTML = "";
-                            modalForRestaurant.hide();
-                            loadRestaurants();
-                        }
-                    };
+                                let closeButton = document.createElement("button");
+                                closeButton.setAttribute("type", "button");
+                                closeButton.classList.add("btn-close");
+                                closeButton.setAttribute("data-bs-dismiss", "alert");
+                                closeButton.setAttribute("aria-label", "Close");
+                                alertDiv.appendChild(closeButton);
 
-                    let body = {
-                        "id": restaurantId.value,
-                        "name": restaurantName.value,
-                        "ratings":restaurantRatings.value,
-                        "address":restaurantAddress.value,
-                        "categories":JSON.parse("[" +updatedCategoryForCurrentRestaurant+ "]"),
-                        "userEmail":restaurantOwnerEmail.value
-                    };
-                    updatedCategoryForCurrentRestaurant = "";
-                    body = JSON.stringify(body);
-                    httpRequest.send(body);
-                }
-                function deleteRestaurant(){
-                    let approve = confirm("Are you sure?");
-                    if(approve){
-                        let restaurantId = document.getElementById("restaurantId").value;
+                                document.getElementById("alertForFillingFormForAddingRestaurant").appendChild(alertDiv);
+                            }
+
+                        </script>
+                    </div>
+                </div>
+                <div class="col-6" style="border: 1px solid gray; border-radius: 7px;">
+                    <div class="row mt-3">
+                        <div class="col-12" id="responseToSearchingRestaurant">
+                        </div>
+                        <div class="modal fade" id="detailsModalForRestaurant" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Restaurant details</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <label for="restaurantNameInDetail">Restaurant name:</label>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-12">
+                                                <input type="text" id="restaurantNameInDetail" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <label for="restaurantRatingsInDetail">Restaurant ratings:</label>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-12">
+                                                <input type="text" id="restaurantRatingsInDetail" class="form-control" disabled>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <label for="restaurantAddressInDetail">Restaurant address:</label>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-12">
+                                                <input type="text" id="restaurantAddressInDetail" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <label for="restaurantOwnerEmailInDetail">Restaurant Owner Email:</label>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-12">
+                                                <input type="text" id="restaurantOwnerEmailInDetail" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch mt-3" id="restaurantCategoryInDetail">
+                                        </div>
+
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="deleteRestaurant()">DELETE</button>
+                                        <button type="button" class="btn btn-primary" onclick="updateRestaurant()">UPDATE</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <script type="text/javascript">
+                            loadUpdatedCategories();
+                            updatedCategoryIdStorage = [];
+                            var updatedCategoryLength = 0;
+                            function loadUpdatedCategories(){
+                                const httpRequest = new XMLHttpRequest();
+                                httpRequest.open("GET","/category",true);
+                                httpRequest.onreadystatechange = function(){
+                                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                        let categoryList = JSON.parse(httpRequest.responseText);
+                                        let categorySelectionContent = "";
+                                        updatedCategoryLength = categoryList.length;
+                                        for(let i = 0;i<updatedCategoryLength;i++){
+                                            categorySelectionContent+="<input class='form-check-input' type='checkbox' role='switch' id=updatedRestaurantCategory-"+i+">";
+                                            categorySelectionContent+="<label class='form-check-label' for=updatedRestaurantCategory-"+i+">"+categoryList[i].name+"</label><br>";
+                                            updatedCategoryIdStorage[i] = categoryList[i].id;
+                                        }
+                                        document.getElementById("restaurantCategoryInDetail").innerHTML = categorySelectionContent;
+                                    }
+                                };
+                                httpRequest.send();
+                            }
+                        </script>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label for="searchRestaurantByEmail" class="form-label">Search Restaurant by email:</label>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <input type="email" class="form-control" id="searchRestaurantByEmail" required>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button class="btn btn-success text-center" onclick="searchRestaurant()">Search</button>
+                        </div>
+                    </div>
+                </div>
+                <script type="text/javascript">
+                    function searchRestaurant(){
                         const httpRequest = new XMLHttpRequest();
-                        httpRequest.open("DELETE", "/restaurant/"+restaurantId, true);
+                        httpRequest.open("GET","/restaurant/email/"+document.getElementById("searchRestaurantByEmail").value,true);
                         httpRequest.onreadystatechange = function(){
                             if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-                                modalForRestaurant.hide();
-                                loadRestaurants();
+                                if(httpRequest.responseText.length!==0) {
+                                    let restaurant = JSON.parse(httpRequest.responseText);
+                                    showAlertAndButton("success", "Restaurant found by email",restaurant.id);
+                                }else{
+                                    showAlertAndButton("danger","Email not found",-1);
+                                }
                             }
                         };
                         httpRequest.send();
                     }
-                }
-            </script>
-        </div>
-        <h1 class="text-center">Here should be shown all restaurants</h1>
-        <div class="row mt-3">
-            <div class="col-12">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>NAME</th>
-                            <th>RATINGS</th>
-                            <th>Address</th>
-                            <th>Owner Email</th>
-                            <th>CategoryList</th>
-                            <th style="width: 10%">DETAILS</th>
-                        </tr>
-                    </thead>
-                    <tbody id="restaurantListBody">
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <script type="text/javascript">
-            loadRestaurants();
+                    function showAlertAndButton(type, message, restaurantId) {
+                        document.getElementById("responseToSearchingRestaurant").innerHTML = "";
 
-            function loadRestaurants(){
-                const httpRequest = new XMLHttpRequest();
-                httpRequest.open("GET","/restaurant",true);
-                httpRequest.onreadystatechange = function(){
-                    if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
-                        let restaurantList = JSON.parse(httpRequest.responseText);
-                        let tableContent = "";
-                        for(let i = 0;i<restaurantList.length;i++){
-                            tableContent+="<tr>";
-                                tableContent+="<td>"+restaurantList[i].id+"</td>";
-                                tableContent+="<td>"+restaurantList[i].name+"</td>";
-                                tableContent+="<td>"+restaurantList[i].ratings+"</td>";
-                                tableContent+="<td>"+restaurantList[i].address+"</td>";
-                                tableContent+="<td>"+restaurantList[i].userEmail+"</td>";
-                                tableContent+="<td>";
-                                    let categoriesLength = restaurantList[i].categories.length;
-                                    for(let j = 0;j<categoriesLength-1;j++){
-                                        tableContent+=restaurantList[i].categories[j].name + ", ";
-                                    }
-                                    if(categoriesLength!==0) {
-                                        tableContent += restaurantList[i].categories[categoriesLength - 1].name;
-                                    }
-                                tableContent+="</td>";
-                                tableContent+="<td><a href=\"/show-me-dishes-relatedToRestaurant/" + restaurantList[i].id + "\">Details</a></td>";
-                            tableContent+="</tr>";
+                        let responseContainer = document.createElement("div");
+                        let alertDiv = document.createElement("div");
+                        alertDiv.classList.add("alert", "alert-" + type, "alert-dismissible", "fade", "show");
+                        alertDiv.setAttribute("role", "alert");
+
+                        let strongTag = document.createElement("strong");
+                        strongTag.textContent = message;
+                        alertDiv.appendChild(strongTag);
+
+                        let closeButton = document.createElement("button");
+                        closeButton.setAttribute("type", "button");
+                        closeButton.classList.add("btn-close");
+                        closeButton.setAttribute("data-bs-dismiss", "alert");
+                        closeButton.setAttribute("aria-label", "Close");
+                        alertDiv.appendChild(closeButton);
+                        responseContainer.appendChild(alertDiv);
+
+                        if(restaurantId!==-1) {
+                            let editButton = document.createElement("button");
+                            editButton.setAttribute("type", "button");
+                            editButton.classList.add("btn", "btn-sm", "btn-primary");
+                            editButton.textContent = "DETAILS";
+                            editButton.addEventListener("click", function () {
+                                openModalForEditingRestaurant(restaurantId);
+                            });
+                            responseContainer.appendChild(editButton);
                         }
-                        document.getElementById("restaurantListBody").innerHTML = tableContent;
+                        document.getElementById("responseToSearchingRestaurant").appendChild(responseContainer);
                     }
-                };
-                httpRequest.send();
-            }
-      </script>
+                    function openModalForEditingRestaurant(restaurantId){
+                        modalForRestaurant = new bootstrap.Modal(document.getElementById("detailsModalForRestaurant"));
+                        const httpRequest = new XMLHttpRequest();
+                        httpRequest.open("GET","/restaurant/"+restaurantId,true);
+                        httpRequest.onreadystatechange = function(){
+                            if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                let result = JSON.parse(httpRequest.responseText);
+                                document.getElementById("restaurantId").value = result.id;
+                                document.getElementById("restaurantNameInDetail").value = result.name;
+                                document.getElementById("restaurantRatingsInDetail").value = result.ratings;
+                                document.getElementById("restaurantAddressInDetail").value = result.address;
+                                for(let i = 0;i<updatedCategoryLength;i++) {
+                                    document.getElementById("updatedRestaurantCategory-"+i).checked = false;
+                                    for (let j = 0; j < result.categories.length; j++) {
+                                        if(updatedCategoryIdStorage[i]===result.categories[j].id){
+                                            document.getElementById("updatedRestaurantCategory-"+i).checked = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                document.getElementById("restaurantOwnerEmailInDetail").value = result.userEmail;
+                                modalForRestaurant.show();
+                            }
+                        }
+                        httpRequest.send();
+                    }
+                    var updatedCategoryForCurrentRestaurant = "";
+                    function findSelectedUpgradedCategories(i){
+                        const httpRequest = new XMLHttpRequest();
+                        httpRequest.open("GET","/category/"+updatedCategoryIdStorage[i], false);
+                        httpRequest.onreadystatechange = function(){
+                            if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                let result = JSON.parse(httpRequest.responseText);
+                                updatedCategoryForCurrentRestaurant+="{";
+                                updatedCategoryForCurrentRestaurant+='"id":'+result.id+",";
+                                updatedCategoryForCurrentRestaurant+='"name":"'+result.name+'"';
+                                updatedCategoryForCurrentRestaurant+="},";
+                            }
+                        };
+                        httpRequest.send();
+
+                    }
+                    function updateRestaurant(){
+                        let restaurantId = document.getElementById("restaurantId");
+                        let restaurantName = document.getElementById("restaurantNameInDetail");
+                        let restaurantRatings = document.getElementById("restaurantRatingsInDetail");
+                        let restaurantAddress = document.getElementById("restaurantAddressInDetail");
+
+                        for(let i = 0;i<updatedCategoryLength;i++){
+                            if(document.getElementById("updatedRestaurantCategory-"+i).checked){
+                                findSelectedUpgradedCategories(i);
+                            }
+                        }
+                        if(updatedCategoryForCurrentRestaurant.length>0) {
+                            updatedCategoryForCurrentRestaurant = updatedCategoryForCurrentRestaurant.slice(0,-1);
+                        }
+                        let restaurantOwnerEmail = document.getElementById("restaurantOwnerEmailInDetail");
+
+                        const httpRequest = new XMLHttpRequest();
+                        httpRequest.open("PUT", "/restaurant", true);
+                        httpRequest.setRequestHeader("Content-Type","application/json");
+                        httpRequest.onreadystatechange = function(){
+                            if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                document.getElementById("responseToSearchingRestaurant").innerHTML = "";
+                                document.getElementById("searchRestaurantByEmail").innerHTML = "";
+                                modalForRestaurant.hide();
+                                loadRestaurants();
+                            }
+                        };
+
+                        let body = {
+                            "id": restaurantId.value,
+                            "name": restaurantName.value,
+                            "ratings":restaurantRatings.value,
+                            "address":restaurantAddress.value,
+                            "categories":JSON.parse("[" +updatedCategoryForCurrentRestaurant+ "]"),
+                            "userEmail":restaurantOwnerEmail.value
+                        };
+                        updatedCategoryForCurrentRestaurant = "";
+                        body = JSON.stringify(body);
+                        httpRequest.send(body);
+                    }
+                    function deleteRestaurant(){
+                        let approve = confirm("Are you sure?");
+                        if(approve){
+                            let restaurantId = document.getElementById("restaurantId").value;
+                            const httpRequest = new XMLHttpRequest();
+                            httpRequest.open("DELETE", "/restaurant/"+restaurantId, true);
+                            httpRequest.onreadystatechange = function(){
+                                if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                                    modalForRestaurant.hide();
+                                    loadRestaurants();
+                                }
+                            };
+                            httpRequest.send();
+                        }
+                    }
+                </script>
+            </div>
+            <!-- -->
+            <section class="restaurant">
+                <div class="restaurant_body">
+                    <div class="menu">
+                        <div class="sort">
+                            <div class="sort_title">Как сортировать</div>
+                            <div class="wrap_sort">
+                                <div class="logo">
+                                    <img src="icons/rating_light.svg" class="png">
+                                </div>
+                                <div class="text">Рейтинг</div>
+                            </div>
+                        </div>
+                        <div class="popular">
+                            <div class="sort_title">Популярные фильтры</div>
+                            <div class="wrap">
+                                <div class="item">
+                                    <div class="logo logoyellow">
+                                        <img src="icons/burger.png" class="png">
+                                    </div>
+                                    <div class="text">Бургеры</div>
+                                </div>
+                                <div class="item">
+                                    <div class="logo logoyellow">
+                                        <img src="icons/fastfood.png" class="png">
+                                    </div>
+                                    <div class="text">Супы</div>
+                                </div>
+                                <div class="item">
+                                    <div class="logo logoyellow">
+                                        <img src="icons/fastfood.png" class="png">
+                                    </div>
+                                    <div class="text">Фаст-фуд</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="more">
+                            <div class="wrap">
+                                <div class="sort_title">Больше фильтров</div>
+                                <div class="wrap">
+                                    <div class="item">
+                                        <div class="logo logoyellow">
+                                            <img src="icons/aziat.png" class="png">
+                                        </div>
+                                        <div class="text">Азиатская</div>
+                                    </div>
+                                    <div class="item">
+                                        <div class="logo logoyellow">
+                                            <img src="icons/fastfood.png" class="png">
+                                        </div>
+                                        <div class="text">Американская</div>
+                                    </div>
+                                    <div class="item">
+                                        <div class="logo logoyellow">
+                                            <img src="icons/bliny.png" class="png">
+                                        </div>
+                                        <div class="text">Блинчики</div>
+                                    </div>
+                                    <div class="item">
+                                        <div class="logo logoyellow">
+                                            <img src="icons/doner.png" class="png">
+                                        </div>
+                                        <div class="text">Донер</div>
+                                    </div>
+                                    <div class="item">
+                                        <div class="logo logoyellow">
+                                            <img src="icons/kazakh.png" class="png">
+                                        </div>
+                                        <div class="text">Казахская</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="allRestaurants">
+                        <div class="resto_title">Все заведения</div>
+                        <div class="restaurants">
+                            <div class="resto_wrap">
+                                <div>
+                                    <img src="image/gippo.png" alt="">
+                                    <div></div>
+                                </div>
+                                <div class="text">
+                                    <div class="resto_name">Gippo</div>
+                                    <button>Бургеры</button>
+                                </div>
+                            </div>
+                            <div class="resto_wrap">
+                                <div>
+                                    <img src="https://images.deliveryhero.io/image/stores-glovo/stores/9d4c128096139dd00ebaf2e09af5c630333497e0fa861a1ad0bb69d981697c48?t=W3siYXV0byI6eyJxIjoibG93In19LHsicmVzaXplIjp7Im1vZGUiOiJmaWxsIiwiYmciOiJ0cmFuc3BhcmVudCIsIndpZHRoIjoyOTQsImhlaWdodCI6MTYwfX1d" alt="">
+                                    <div></div>
+                                </div>
+                                <div class="text">
+                                    <div class="resto_name">Salam Bro</div>
+                                    <button>Бургеры</button>
+                                </div>
+                            </div>
+                            <div class="resto_wrap">
+                                <div>
+                                    <img src="https://images.deliveryhero.io/image/stores-glovo/stores/e6e337103286041016985aecbe997889197c59b6af7e1f205de60cb6e50cb05b?t=W3siYXV0byI6eyJxIjoibG93In19LHsicmVzaXplIjp7Im1vZGUiOiJmaWxsIiwiYmciOiJ0cmFuc3BhcmVudCIsIndpZHRoIjoyOTQsImhlaWdodCI6MTYwfX1d" alt="">
+                                    <div></div>
+                                </div>
+                                <div class="text">
+                                    <div class="resto_name">Донер Сатпаева</div>
+                                    <button>Азиатское</button>
+                                </div>
+                            </div>
+                            <div class="resto_wrap">
+                                <div>
+                                    <img src="image/baurdaq.png" alt="">
+                                    <div></div>
+                                </div>
+                                <div class="text">
+                                    <div class="resto_name">Baurdaq</div>
+                                    <button>Бургеры</button>
+                                </div>
+                            </div>
+                            <div class="resto_wrap">
+                                <div>
+                                    <img src="image/foodband.png" alt="">
+                                    <div></div>
+                                </div>
+                                <div class="text">
+                                    <div class="resto_name">FoodBand</div>
+                                    <button>Бургеры</button>
+                                </div>
+                            </div>
+                            <div class="resto_wrap">
+                                <div>
+                                    <img src="image/doner.png" alt="">
+                                    <div></div>
+                                </div>
+                                <div class="text">
+                                    <div class="resto_name">Doner&Burger</div>
+                                    <button>Бургеры</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+    <!--        Here should be all restaurant-->
+            <h1 class="text-center">Here should be shown all restaurants</h1>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>NAME</th>
+                                <th>RATINGS</th>
+                                <th>Address</th>
+                                <th>Owner Email</th>
+                                <th>CategoryList</th>
+                                <th style="width: 10%">DETAILS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="restaurantListBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <script type="text/javascript">
+                loadRestaurants();
+
+                function loadRestaurants(){
+                    const httpRequest = new XMLHttpRequest();
+                    httpRequest.open("GET","/restaurant",true);
+                    httpRequest.onreadystatechange = function(){
+                        if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                            let restaurantList = JSON.parse(httpRequest.responseText);
+                            let tableContent = "";
+                            for(let i = 0;i<restaurantList.length;i++){
+                                tableContent+="<tr>";
+                                    tableContent+="<td>"+restaurantList[i].id+"</td>";
+                                    tableContent+="<td>"+restaurantList[i].name+"</td>";
+                                    tableContent+="<td>"+restaurantList[i].ratings+"</td>";
+                                    tableContent+="<td>"+restaurantList[i].address+"</td>";
+                                    tableContent+="<td>"+restaurantList[i].userEmail+"</td>";
+                                    tableContent+="<td>";
+                                        let categoriesLength = restaurantList[i].categories.length;
+                                        for(let j = 0;j<categoriesLength-1;j++){
+                                            tableContent+=restaurantList[i].categories[j].name + ", ";
+                                        }
+                                        if(categoriesLength!==0) {
+                                            tableContent += restaurantList[i].categories[categoriesLength - 1].name;
+                                        }
+                                    tableContent+="</td>";
+                                    tableContent+="<td><a href=\"/show-me-dishes-relatedToRestaurant/" + restaurantList[i].id + "\">Details</a></td>";
+                                tableContent+="</tr>";
+                            }
+                            document.getElementById("restaurantListBody").innerHTML = tableContent;
+                        }
+                    };
+                    httpRequest.send();
+                }
+          </script>
+        </div>
     </div>
 
 </html>

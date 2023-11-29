@@ -3,7 +3,21 @@
       xlmns:th="http://www.thymeleaf.org" xmlns:xlmns="http://www.w3.org/1999/xhtml"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="layout.html">
+    <head>
+        <link rel="stylesheet" th:href="@{'/css/index.css'}">
+    </head>
     <div layout:fragment="content">
-        <h1 class="text-center mt-5">Welcome to Yeldos's Glovo</h1>
+        <section class="index">
+            <h1 class="index_title">Доставка в городе Алматы</h1>
+            <div class="index_cards">
+                <div class="index_cards_card">
+                    <a th:href="@{'/show-me-restaurants'}">
+                        <img src="https://images.deliveryhero.io/image/customer-assets-glovo/category_icons/634ad72df44f6e1d591c4a8bb725a95a8d2f6b704f0997ee65b351e50ef58dd2?t=W3siYXV0byI6eyJxIjoiaGlnaCJ9fSx7InJlc2l6ZSI6eyJtb2RlIjoiZml0Iiwid2lkdGgiOjEyMCwiaGVpZ2h0IjoxMjB9fV0=">
+                        <h2 class="index_cards_card_text">Еда</h2>
+                    </a>
+                </div>
+            </div>
+        </section>
+        <h1 class="text-center" style="margin-top: 100px">Welcome to Yeldos's Glovo</h1>
     </div>
 </html>

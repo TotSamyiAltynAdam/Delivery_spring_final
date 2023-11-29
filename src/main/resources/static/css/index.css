@@ -1,0 +1,33 @@
+.index .index_title {
+    font-size: 45px;
+    margin: 35px;
+    text-align: center;
+}
+
+.index .index_cards{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.index .index_cards .index_cards_card{
+    width: 110px;
+    height: 110px;
+    margin: 0 30px;
+    background-color: aliceblue;
+    border-radius: 56% 44% 45% 55%/58% 53% 47% 42%;
+    cursor: pointer;
+}
+
+.index .index_cards .index_cards_card a{
+    text-decoration: none;
+    color: rgb(11, 11, 11);
+}
+.index .index_cards .index_cards_card img{
+    width: 70px;
+    display: block;
+    margin: 17px auto;
+}
+.index .index_cards .index_cards_card .index_cards_card_text{
+    margin-top: 35px;
+}
