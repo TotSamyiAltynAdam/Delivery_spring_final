@@ -10,7 +10,7 @@
         <div class="restaurant_content">
             <input type="hidden" id="restaurantId">
             <div class="row mb-3" sec:authorize="hasAnyRole('ROLE_ADMIN')">
-                <div class="col-6" style="border: 1px solid darkgreen; border-radius: 7px;">
+                <form enctype="multipart/form-data" class="col-6" style="border: 1px solid darkgreen; border-radius: 7px;">
                     <div class="row mt-3">
                         <div class="col-12" id="alertForFillingFormForAddingRestaurant">
                         </div>
@@ -43,6 +43,16 @@
                     <div class="row mt-2">
                         <div class="col-12">
                             <input type="text" class="form-control" id="restaurantAddress" required>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label for="restaurantPhoto">PHOTO:</label>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <input type="file" class="form-control" id="restaurantPhoto" required>
                         </div>
                     </div>
                     <div class="row mt-3">
@@ -106,6 +116,7 @@
                                 let restaurantName = document.getElementById("restaurantName");
                                 let restaurantRatings = document.getElementById("restaurantRatings");
                                 let restaurantAddress = document.getElementById("restaurantAddress");
+                                let restaurantPhoto = document.getElementById("restaurantPhoto");
                                 let restaurantOwner = document.getElementById("restaurantOwner");
 
                                 if(restaurantName.value==="") {
@@ -114,8 +125,11 @@
                                     showAlertForAddingRestaurant("danger","Write a Restaurant address!");
                                 } else if(restaurantOwner.value===""){
                                     showAlertForAddingRestaurant("danger","Write Restaurant Owner Email!");
+                                } else if(!restaurantPhoto.files[0]) {
+                                    showAlertForAddingRestaurant("danger","Upload restaurant image")
                                 } else{
                                     showAlertForAddingRestaurant("success","Restaurant added successfully!");
+
                                     for (let i = 0; i < categoryLength; i++) {
                                         if (document.getElementById("restaurantCategory" + i).checked) {
                                             findSelectedCheckboxes(i)
@@ -125,7 +139,6 @@
 
                                     const httpRequest = new XMLHttpRequest();
                                     httpRequest.open("POST", "/restaurant", true);
-                                    httpRequest.setRequestHeader("Content-Type", "application/json");
 
                                     httpRequest.onreadystatechange = function () {
                                         if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
@@ -140,16 +153,15 @@
                                             loadRestaurants();
                                         }
                                     };
-                                    let body = {
-                                        "name": restaurantName.value,
-                                        "ratings": restaurantRatings.value,
-                                        "address": restaurantAddress.value,
-                                        "userEmail": restaurantOwner.value,
-                                        "categories": JSON.parse("[" + categoriesContent + "]")
-                                    };
+                                    let formData = new FormData();
+                                    formData.append("photo", restaurantPhoto.files[0]);
+                                    formData.append("name",restaurantName.value);
+                                    formData.append("ratings", restaurantRatings.value);
+                                    formData.append("address", restaurantAddress.value);
+                                    formData.append("userEmail", restaurantOwner.value);
+                                    formData.append("categories", JSON.parse("[" + categoriesContent + "]"));
                                     categoriesContent = "";
-                                    body = JSON.stringify(body);
-                                    httpRequest.send(body);
+                                    httpRequest.send(formData);
                                 }
                             }
                             function showAlertForAddingRestaurant(type, message) {
@@ -175,8 +187,8 @@
 
                         </script>
                     </div>
-                </div>
-                <div class="col-6" style="border: 1px solid gray; border-radius: 7px;">
+                </form>
+                <div class="col-6" style="border: 1px solid; border-radius: 7px;">
                     <div class="row mt-3">
                         <div class="col-12" id="responseToSearchingRestaurant">
                         </div>
@@ -187,55 +199,66 @@
                                         <h1 class="modal-title fs-5" id="staticBackdropLabel">Restaurant details</h1>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-                                    <div class="modal-body">
-                                        <div class="row mt-3">
-                                            <div class="col-12">
-                                                <label for="restaurantNameInDetail">Restaurant name:</label>
-                                            </div>
+                                    <form enctype="multipart/form-data">
+                                        <div class="modal-body">
+                                                <div class="row mt-3">
+                                                    <div class="col-12">
+                                                        <label for="restaurantNameInDetail">Restaurant name:</label>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-2">
+                                                    <div class="col-12">
+                                                        <input type="text" id="restaurantNameInDetail" class="form-control" required>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-3">
+                                                    <div class="col-12">
+                                                        <label for="restaurantRatingsInDetail">Restaurant ratings:</label>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-2">
+                                                    <div class="col-12">
+                                                        <input type="text" id="restaurantRatingsInDetail" class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-3">
+                                                    <div class="col-12">
+                                                        <label for="restaurantAddressInDetail">Restaurant address:</label>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-2">
+                                                    <div class="col-12">
+                                                        <input type="text" id="restaurantAddressInDetail" class="form-control" required>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-3">
+                                                    <div class="col-12">
+                                                        <label for="restaurantPhotoInDetail">PHOTO:</label>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-2">
+                                                    <div class="col-12">
+                                                        <input type="file" class="form-control" id="restaurantPhotoInDetail" required>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-3">
+                                                    <div class="col-12">
+                                                        <label for="restaurantOwnerEmailInDetail">Restaurant Owner Email:</label>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-2">
+                                                    <div class="col-12">
+                                                        <input type="text" id="restaurantOwnerEmailInDetail" class="form-control" required>
+                                                    </div>
+                                                </div>
+                                                <div class="form-check form-switch mt-3" id="restaurantCategoryInDetail">
+                                                </div>
                                         </div>
-                                        <div class="row mt-2">
-                                            <div class="col-12">
-                                                <input type="text" id="restaurantNameInDetail" class="form-control">
-                                            </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="deleteRestaurant()">DELETE</button>
+                                            <button type="button" class="btn btn-primary" onclick="updateRestaurant()">UPDATE</button>
                                         </div>
-                                        <div class="row mt-3">
-                                            <div class="col-12">
-                                                <label for="restaurantRatingsInDetail">Restaurant ratings:</label>
-                                            </div>
-                                        </div>
-                                        <div class="row mt-2">
-                                            <div class="col-12">
-                                                <input type="text" id="restaurantRatingsInDetail" class="form-control" disabled>
-                                            </div>
-                                        </div>
-                                        <div class="row mt-3">
-                                            <div class="col-12">
-                                                <label for="restaurantAddressInDetail">Restaurant address:</label>
-                                            </div>
-                                        </div>
-                                        <div class="row mt-2">
-                                            <div class="col-12">
-                                                <input type="text" id="restaurantAddressInDetail" class="form-control">
-                                            </div>
-                                        </div>
-                                        <div class="row mt-3">
-                                            <div class="col-12">
-                                                <label for="restaurantOwnerEmailInDetail">Restaurant Owner Email:</label>
-                                            </div>
-                                        </div>
-                                        <div class="row mt-2">
-                                            <div class="col-12">
-                                                <input type="text" id="restaurantOwnerEmailInDetail" class="form-control">
-                                            </div>
-                                        </div>
-                                        <div class="form-check form-switch mt-3" id="restaurantCategoryInDetail">
-                                        </div>
-
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="deleteRestaurant()">DELETE</button>
-                                        <button type="button" class="btn btn-primary" onclick="updateRestaurant()">UPDATE</button>
-                                    </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -338,6 +361,7 @@
                                 document.getElementById("restaurantNameInDetail").value = result.name;
                                 document.getElementById("restaurantRatingsInDetail").value = result.ratings;
                                 document.getElementById("restaurantAddressInDetail").value = result.address;
+                                // document.getElementById("restaurantPhotoInDetail").src = result.photo;
                                 for(let i = 0;i<updatedCategoryLength;i++) {
                                     document.getElementById("updatedRestaurantCategory-"+i).checked = false;
                                     for (let j = 0; j < result.categories.length; j++) {
@@ -374,6 +398,7 @@
                         let restaurantName = document.getElementById("restaurantNameInDetail");
                         let restaurantRatings = document.getElementById("restaurantRatingsInDetail");
                         let restaurantAddress = document.getElementById("restaurantAddressInDetail");
+                        let restaurantPhoto = document.getElementById("restaurantPhotoInDetail");
 
                         for(let i = 0;i<updatedCategoryLength;i++){
                             if(document.getElementById("updatedRestaurantCategory-"+i).checked){
@@ -386,28 +411,24 @@
                         let restaurantOwnerEmail = document.getElementById("restaurantOwnerEmailInDetail");
 
                         const httpRequest = new XMLHttpRequest();
-                        httpRequest.open("PUT", "/restaurant", true);
-                        httpRequest.setRequestHeader("Content-Type","application/json");
+                        httpRequest.open("PUT", "/restaurant/"+restaurantId.value, true);
                         httpRequest.onreadystatechange = function(){
-                            if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
+                            if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===201){
                                 document.getElementById("responseToSearchingRestaurant").innerHTML = "";
                                 document.getElementById("searchRestaurantByEmail").innerHTML = "";
                                 modalForRestaurant.hide();
                                 loadRestaurants();
                             }
                         };
-
-                        let body = {
-                            "id": restaurantId.value,
-                            "name": restaurantName.value,
-                            "ratings":restaurantRatings.value,
-                            "address":restaurantAddress.value,
-                            "categories":JSON.parse("[" +updatedCategoryForCurrentRestaurant+ "]"),
-                            "userEmail":restaurantOwnerEmail.value
-                        };
+                        let formData = new FormData();
+                        formData.append("photo", restaurantPhoto.files[0]);
+                        formData.append("name",restaurantName.value);
+                        formData.append("ratings", restaurantRatings.value);
+                        formData.append("address", restaurantAddress.value);
+                        formData.append("categories", JSON.parse("[" +updatedCategoryForCurrentRestaurant+ "]"))
+                        formData.append("userEmail",restaurantOwnerEmail.value);
                         updatedCategoryForCurrentRestaurant = "";
-                        body = JSON.stringify(body);
-                        httpRequest.send(body);
+                        httpRequest.send(formData);
                     }
                     function deleteRestaurant(){
                         let approve = confirm("Are you sure?");
@@ -515,6 +536,7 @@
                     window.location.href = "/show-me-dishes-relatedToRestaurant/" + restaurantId;
                 }
                 function loadRestaurants(){
+                    document.getElementById("restaurantContainer").innerHTML = "";
                     const httpRequest = new XMLHttpRequest();
                     httpRequest.open("GET","/restaurant",true);
                     httpRequest.onreadystatechange = function(){
@@ -532,26 +554,25 @@
                                 });
 
                                 let image = document.createElement("img");
-                                // Check if the restaurant has a photo
-                                if (restaurant.photo) {
-                                    image.src = restaurant.photo;
-                                    image.alt = "birnarse";
-                                } else {
-                                    image.src = "image/icon-image-not-found-free-vector.jpg";
-                                    image.alt = "No Photo";
-                                }
-
+                                image.src = restaurant.photo;
+                                image.alt = "birnarse";
 
                                 imageDiv.appendChild(image);
-                                imageDiv.appendChild(document.createElement("div")); //additionalDiv, but why
 
                                 let textDiv = document.createElement("div");
                                 textDiv.className = "text";
+
                                 let restoName = document.createElement("div");
                                 restoName.className = "resto_name";
                                 restoName.innerText = restaurant.name;
 
+                                let category = document.createElement("div");
+                                if(restaurant.category != null) {
+                                    category.innerText = restaurant.category; // Replace with the appropriate property from your data
+                                }
+
                                 textDiv.appendChild(restoName);
+                                textDiv.append(category);
 
                                 restoWrap.appendChild(imageDiv);
                                 restoWrap.appendChild(textDiv);

@@ -70,11 +70,10 @@
 }
 .restaurant_content .resto_wrap img{
     border-radius: 6px;
+    width: 294px;
+    height: 160px;
 }
 .restaurant_content .resto_wrap .text{
     display: flex;
     justify-content: space-between;
-}
-.restaurant_content .resto_wrap .text button{
-    border-style: none;
 }

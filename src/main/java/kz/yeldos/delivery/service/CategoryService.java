@@ -1,12 +1,8 @@
 package kz.yeldos.delivery.service;
 
 import kz.yeldos.delivery.dto.CategoryDTO;
-import kz.yeldos.delivery.dto.RestaurantDTO;
 import kz.yeldos.delivery.mapper.CategoryMapper;
-import kz.yeldos.delivery.mapper.RestaurantMapper;
-import kz.yeldos.delivery.model.Category;
 import kz.yeldos.delivery.repository.CategoryRepository;
-import kz.yeldos.delivery.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

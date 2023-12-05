@@ -6,7 +6,9 @@ import kz.yeldos.delivery.model.Category;
 import kz.yeldos.delivery.model.Restaurant;
 import kz.yeldos.delivery.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final RestaurantMapper restaurantMapper;
+    private final ImageService imageService;
 
     public List<RestaurantDTO> getRestaurants(){
         return restaurantMapper.toDtoList(restaurantRepository.findAll());
@@ -27,11 +30,24 @@ public class RestaurantService {
         return restaurantMapper.toDto(restaurantRepository.findByUserEmail(email));
     }
 
-    public RestaurantDTO addRestaurant(RestaurantDTO restaurant){
-        return restaurantMapper.toDto(restaurantRepository.save(restaurantMapper.toModel(restaurant)));
+    public void addRestaurant(RestaurantDTO restaurantDTO, MultipartFile photo){
+        restaurantDTO.setPhoto(uploadImage(photo));
+        restaurantRepository.save(restaurantMapper.toModel(restaurantDTO));
     }
-    public RestaurantDTO updateRestaurant(RestaurantDTO restaurant){
-        return restaurantMapper.toDto(restaurantRepository.save(restaurantMapper.toModel(restaurant)));
+    @SneakyThrows
+    private String uploadImage(MultipartFile multipartFile){
+        if(!multipartFile.isEmpty()){
+            return imageService.upload(multipartFile.getOriginalFilename(), multipartFile.getInputStream());
+        }else{
+            return  "";
+        }
+
+    }
+    public void updateRestaurant(RestaurantDTO restaurantDTO, MultipartFile photo){
+        Restaurant restaurant = restaurantMapper.toModel(restaurantDTO);
+        restaurant.setPhoto(uploadImage(photo));
+
+        restaurantRepository.save(restaurant);
     }
     public void deleteRestaurant(Long id){
         restaurantRepository.deleteById(id);

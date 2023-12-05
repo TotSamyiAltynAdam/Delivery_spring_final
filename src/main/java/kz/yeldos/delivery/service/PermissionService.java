@@ -1,11 +1,8 @@
 package kz.yeldos.delivery.service;
 
 import kz.yeldos.delivery.dto.PermissionDTO;
-import kz.yeldos.delivery.dto.RestaurantDTO;
 import kz.yeldos.delivery.mapper.PermissionMapper;
-import kz.yeldos.delivery.mapper.RestaurantMapper;
 import kz.yeldos.delivery.repository.PermissionRepository;
-import kz.yeldos.delivery.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

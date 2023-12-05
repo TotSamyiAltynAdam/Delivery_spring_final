@@ -3,12 +3,20 @@ package kz.yeldos.delivery.api;
 import kz.yeldos.delivery.dto.Additional_blockDTO;
 import kz.yeldos.delivery.dto.DishDTO;
 import kz.yeldos.delivery.dto.RestaurantDTO;
+import kz.yeldos.delivery.model.Category;
 import kz.yeldos.delivery.service.Additional_blockService;
 import kz.yeldos.delivery.service.Additional_dishService;
 import kz.yeldos.delivery.service.DishService;
 import kz.yeldos.delivery.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import static org.springframework.http.ResponseEntity.notFound;
 
 import java.util.List;
 
@@ -35,13 +43,47 @@ public class RestaurantRestController {
         return restaurantService.getRestaurantByEmail(email);
     }
     @PostMapping
-    public RestaurantDTO addRestaurant(@RequestBody RestaurantDTO restaurant){
-        return restaurantService.addRestaurant(restaurant);
+    public ResponseEntity<Void> addRestaurant(
+            @RequestParam("photo") MultipartFile photo,
+            @RequestParam("name") String name,
+            @RequestParam("ratings") Integer ratings,
+            @RequestParam("address") String address,
+            @RequestParam("userEmail") String userEmail,
+            @RequestParam("categories") List<Category> categories
+            ){
+        RestaurantDTO restaurant = new RestaurantDTO();
+        restaurant.setName(name);
+        restaurant.setAddress(address);
+        restaurant.setUserEmail(userEmail);
+        restaurant.setRatings(ratings);
+        restaurant.setCategories(categories);
+        restaurant.setPhoto(null);
+        restaurantService.addRestaurant(restaurant, photo);
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PutMapping
-    public RestaurantDTO updateRestaurant(@RequestBody RestaurantDTO restaurant){
-        return restaurantService.updateRestaurant(restaurant);
+    @PutMapping("/{restaurant_id}")
+    public ResponseEntity<Void> updateRestaurant(
+            @PathVariable(name = "restaurant_id") Long id,
+            @RequestParam("photo") MultipartFile photo,
+            @RequestParam("name") String name,
+            @RequestParam("ratings") Integer ratings,
+            @RequestParam("address") String address,
+            @RequestParam("userEmail") String userEmail,
+            @RequestParam("categories") List<Category> categories
+    ){
+        RestaurantDTO restaurantDTO = new RestaurantDTO();
+        restaurantDTO.setId(id);
+        restaurantDTO.setName(name);
+        restaurantDTO.setAddress(address);
+        restaurantDTO.setUserEmail(userEmail);
+        restaurantDTO.setRatings(ratings);
+        restaurantDTO.setCategories(categories);
+        restaurantDTO.setPhoto(null);
+        restaurantService.updateRestaurant(restaurantDTO, photo);
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @DeleteMapping(value = "{id}")
