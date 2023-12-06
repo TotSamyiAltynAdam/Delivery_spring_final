@@ -45,7 +45,14 @@ public class RestaurantService {
     }
     public void updateRestaurant(RestaurantDTO restaurantDTO, MultipartFile photo){
         Restaurant restaurant = restaurantMapper.toModel(restaurantDTO);
-        restaurant.setPhoto(uploadImage(photo));
+        if(photo!=null && !photo.isEmpty()) {
+            restaurant.setPhoto(uploadImage(photo));
+        } else {
+            Restaurant existingRestaurant = restaurantRepository.findById(restaurant.getId()).orElse(null);
+            if(existingRestaurant != null){
+                restaurant.setPhoto(existingRestaurant.getPhoto());
+            }
+        }
 
         restaurantRepository.save(restaurant);
     }

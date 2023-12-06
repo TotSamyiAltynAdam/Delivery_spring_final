@@ -31,4 +31,8 @@ public class CategoryService {
         categoryRepository.deleteById(id);
     }
 
+    public List<CategoryDTO> getCategoriesByIds(List<Long> categoryIds) {
+        return categoryMapper.toDTOList(categoryRepository.findAllById(categoryIds));
+    }
+
 }

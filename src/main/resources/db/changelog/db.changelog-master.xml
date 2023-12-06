@@ -3,23 +3,23 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
 
-    <changeSet id="2023_11_26_create_init_tables" author="yeldos.anarbayev">
+    <changeSet id="2023_12_06_create_init_tables" author="yeldos.anarbayev">
         <sqlFile
                 dbms="mysql"
                 encoding="UTF-8"
                 endDelimiter=";"
-                path="db/changelog/changes/2023_11_26_create_init_tables.sql"
+                path="db/changelog/changes/2023_12_06_create_init_tables.sql"
                 relativeToChangelogFile="false"
                 stripComments="true"
                 splitStatements="true"
         />
     </changeSet>
-    <changeSet id="2023_11_28_insert_init_data" author="yeldos.anarbayev">
+    <changeSet id="2023_12_06_insert_default_data" author="yeldos.anarbayev">
         <sqlFile
                 dbms="mysql"
                 encoding="UTF-8"
                 endDelimiter=";"
-                path="db/changelog/changes/2023_11_28_insert_init_data.sql"
+                path="db/changelog/changes/2023_12_06_insert_default_data.sql"
                 relativeToChangelogFile="false"
                 stripComments="true"
                 splitStatements="true"

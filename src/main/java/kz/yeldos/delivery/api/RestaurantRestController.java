@@ -1,24 +1,20 @@
 package kz.yeldos.delivery.api;
 
 import kz.yeldos.delivery.dto.Additional_blockDTO;
+import kz.yeldos.delivery.dto.CategoryDTO;
 import kz.yeldos.delivery.dto.DishDTO;
 import kz.yeldos.delivery.dto.RestaurantDTO;
-import kz.yeldos.delivery.model.Category;
-import kz.yeldos.delivery.service.Additional_blockService;
-import kz.yeldos.delivery.service.Additional_dishService;
-import kz.yeldos.delivery.service.DishService;
-import kz.yeldos.delivery.service.RestaurantService;
+import kz.yeldos.delivery.service.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import static org.springframework.http.ResponseEntity.notFound;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,6 +22,7 @@ import java.util.List;
 public class RestaurantRestController {
     private final RestaurantService restaurantService;
     private final DishService dishService;
+    private final CategoryService categoryService;
     private final Additional_blockService additionalBlockService;
     private final Additional_dishService additionalDishService;
 
@@ -49,14 +46,19 @@ public class RestaurantRestController {
             @RequestParam("ratings") Integer ratings,
             @RequestParam("address") String address,
             @RequestParam("userEmail") String userEmail,
-            @RequestParam("categories") List<Category> categories
+            @RequestParam("categories") String categories
             ){
         RestaurantDTO restaurant = new RestaurantDTO();
         restaurant.setName(name);
         restaurant.setAddress(address);
         restaurant.setUserEmail(userEmail);
         restaurant.setRatings(ratings);
-        restaurant.setCategories(categories);
+        String[] categoryIDString = categories.split(",");
+        List<Long> categoryIDs = Arrays.stream(categoryIDString)
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+        List<CategoryDTO> categoryIDlist = categoryService.getCategoriesByIds(categoryIDs);
+        restaurant.setCategories(categoryIDlist);
         restaurant.setPhoto(null);
         restaurantService.addRestaurant(restaurant, photo);
 
@@ -66,12 +68,12 @@ public class RestaurantRestController {
     @PutMapping("/{restaurant_id}")
     public ResponseEntity<Void> updateRestaurant(
             @PathVariable(name = "restaurant_id") Long id,
-            @RequestParam("photo") MultipartFile photo,
+            @RequestParam(value = "photo", required = false) MultipartFile photo,
             @RequestParam("name") String name,
             @RequestParam("ratings") Integer ratings,
             @RequestParam("address") String address,
             @RequestParam("userEmail") String userEmail,
-            @RequestParam("categories") List<Category> categories
+            @RequestParam("categories") String categories
     ){
         RestaurantDTO restaurantDTO = new RestaurantDTO();
         restaurantDTO.setId(id);
@@ -79,7 +81,13 @@ public class RestaurantRestController {
         restaurantDTO.setAddress(address);
         restaurantDTO.setUserEmail(userEmail);
         restaurantDTO.setRatings(ratings);
-        restaurantDTO.setCategories(categories);
+        String[] categoryIDString = categories.split(",");
+        List<Long> categoryIDs = Arrays.stream(categoryIDString)
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+        List<CategoryDTO> categoryIDlist = categoryService.getCategoriesByIds(categoryIDs);
+        restaurantDTO.setCategories(categoryIDlist);
+
         restaurantDTO.setPhoto(null);
         restaurantService.updateRestaurant(restaurantDTO, photo);
 

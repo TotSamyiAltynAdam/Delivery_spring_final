@@ -15,19 +15,12 @@ import java.io.OutputStream;
 @Controller
 public class MediaController {
 
-    public String hello(){
-        System.out.println("hellllo");
-        return "index";
-    }
-
     @GetMapping("media/{*path}")
     public ResponseEntity<Void> getFile(
             @PathVariable(name = "path")String imagePath,
             HttpServletResponse httpServletResponse
     ){
-        System.out.println("I am in ==============================");
         File file = new File("./"+imagePath);
-        System.out.println(file.getAbsolutePath());
         if(!file.exists() || !file.isFile()){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

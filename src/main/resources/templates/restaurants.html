@@ -103,10 +103,7 @@
                                 httpRequest.onreadystatechange = function(){
                                     if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
                                         let result = JSON.parse(httpRequest.responseText);
-                                        categoriesContent+="{";
-                                        categoriesContent+='"id":'+result.id+",";
-                                        categoriesContent+='"name":"'+result.name+'"';
-                                        categoriesContent+="},";
+                                        categoriesContent+=result.id+",";
                                     }
                                 };
                                 httpRequest.send();
@@ -159,7 +156,7 @@
                                     formData.append("ratings", restaurantRatings.value);
                                     formData.append("address", restaurantAddress.value);
                                     formData.append("userEmail", restaurantOwner.value);
-                                    formData.append("categories", JSON.parse("[" + categoriesContent + "]"));
+                                    formData.append("categories", categoriesContent);
                                     categoriesContent = "";
                                     httpRequest.send(formData);
                                 }
@@ -233,7 +230,21 @@
                                                 </div>
                                                 <div class="row mt-3">
                                                     <div class="col-12">
-                                                        <label for="restaurantPhotoInDetail">PHOTO:</label>
+                                                        <span>OLD PHOTO:</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-2">
+                                                    <div class="col-12">
+                                                        <img
+                                                                th:src="@{image/icon-image-not-found-free-vector.jpg}"
+                                                                style="width: 294px; height: 160px;"
+                                                                alt="oldRestaurantPhoto"
+                                                                id="oldRestaurantPhotoInDetail">
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-3">
+                                                    <div class="col-12">
+                                                        <label for="restaurantPhotoInDetail">NEW PHOTO:</label>
                                                     </div>
                                                 </div>
                                                 <div class="row mt-2">
@@ -361,7 +372,7 @@
                                 document.getElementById("restaurantNameInDetail").value = result.name;
                                 document.getElementById("restaurantRatingsInDetail").value = result.ratings;
                                 document.getElementById("restaurantAddressInDetail").value = result.address;
-                                // document.getElementById("restaurantPhotoInDetail").src = result.photo;
+                                document.getElementById("oldRestaurantPhotoInDetail").src = result.photo;
                                 for(let i = 0;i<updatedCategoryLength;i++) {
                                     document.getElementById("updatedRestaurantCategory-"+i).checked = false;
                                     for (let j = 0; j < result.categories.length; j++) {
@@ -384,10 +395,7 @@
                         httpRequest.onreadystatechange = function(){
                             if(httpRequest.readyState===XMLHttpRequest.DONE && httpRequest.status===200){
                                 let result = JSON.parse(httpRequest.responseText);
-                                updatedCategoryForCurrentRestaurant+="{";
-                                updatedCategoryForCurrentRestaurant+='"id":'+result.id+",";
-                                updatedCategoryForCurrentRestaurant+='"name":"'+result.name+'"';
-                                updatedCategoryForCurrentRestaurant+="},";
+                                updatedCategoryForCurrentRestaurant+=result.id+",";
                             }
                         };
                         httpRequest.send();
@@ -421,11 +429,13 @@
                             }
                         };
                         let formData = new FormData();
-                        formData.append("photo", restaurantPhoto.files[0]);
+                        if(restaurantPhoto.files.length > 0) {
+                            formData.append("photo", restaurantPhoto.files[0]);
+                        }
                         formData.append("name",restaurantName.value);
                         formData.append("ratings", restaurantRatings.value);
                         formData.append("address", restaurantAddress.value);
-                        formData.append("categories", JSON.parse("[" +updatedCategoryForCurrentRestaurant+ "]"))
+                        formData.append("categories", updatedCategoryForCurrentRestaurant);
                         formData.append("userEmail",restaurantOwnerEmail.value);
                         updatedCategoryForCurrentRestaurant = "";
                         httpRequest.send(formData);
@@ -564,13 +574,19 @@
 
                                 let restoName = document.createElement("div");
                                 restoName.className = "resto_name";
-                                restoName.innerText = restaurant.name;
+                                restoName.innerHTML = `${restaurant.name}<br>${restaurant.userEmail}`;
 
                                 let category = document.createElement("div");
-                                if(restaurant.category != null) {
-                                    category.innerText = restaurant.category; // Replace with the appropriate property from your data
+                                let categoryListString = "";
+                                if(restaurant.categories && restaurant.categories.length>0) {
+                                    restaurant.categories.forEach((categoryObj, index) => {
+                                        categoryListString += categoryObj.name;
+                                        if(index < restaurant.categories.length - 1){
+                                            categoryListString += ", ";
+                                        }
+                                    });
                                 }
-
+                                category.innerText = categoryListString;
                                 textDiv.appendChild(restoName);
                                 textDiv.append(category);
 

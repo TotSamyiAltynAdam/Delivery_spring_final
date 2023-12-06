@@ -18,7 +18,6 @@ public class ImageService {
     @SneakyThrows
     public String upload(String imagePath, InputStream content){
         Path fullImagePath = Path.of("."+subFolder,imagePath);
-        System.out.println(fullImagePath+"=====================");
         try (content){
             Files.createDirectories(fullImagePath.getParent());
             Files.write(fullImagePath, content.readAllBytes(), CREATE, TRUNCATE_EXISTING);
